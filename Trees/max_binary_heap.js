@@ -5,7 +5,6 @@ class MaxBinaryHeap{
 
     insert(node){
         this.heap.push(node)
-        console.log("Insert: ", this.heap)
         this.percUp(this.heap.length - 1 )
     }
 
@@ -16,16 +15,16 @@ class MaxBinaryHeap{
     }
 
     biggerChild(i){
-        //if right child is bigger then return index of left child
+        //if right child is bigger then return index of right child
         if(this.heap[ i * 2 + 1 ] > this.heap[ i * 2 ]){
             return i*2 + 1
         }        
-        //if right is not bigger, return 
+        //if right is not bigger, return index of left child
         else return i * 2
     }
 
     percDown(i){
-        //get bigger of tho children... if 
+        //get bigger of tho children... 
         let j = this.biggerChild(i)
 
         if(this.heap[i] < this.heap[ j ]){
@@ -43,9 +42,6 @@ class MaxBinaryHeap{
         if(i > 2){
 
             let parent = parseInt(i / 2);
-
-            console.log("parseInt( parent)", parent)
-            console.log(`${this.heap[ parent ]} < ${this.heap[ i ]}`)
 
             if(this.heap[ parseInt( parent) ] < this.heap[ i ] ){
                 let temp = this.heap[parent];
@@ -80,4 +76,4 @@ console.log(heap)
 
 heap.deleteRoot()
 
-console.log(heap)
+console.log("deleted root: ", heap)
