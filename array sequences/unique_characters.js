@@ -1,4 +1,5 @@
-let UniqueChars = function(str){
+(()=>{
+	let UniqueChars = function(str){
 
 	let seen = new Set();
 
@@ -16,3 +17,4 @@ let UniqueChars = function(str){
 console.log(UniqueChars(""))
 console.log(UniqueChars("goo"))
 console.log(UniqueChars("abcdefg"))
+})()

@@ -86,16 +86,16 @@
 
 	global.PairTwo = Pair;
 
-})(window);
+})(this);
 
 console.log('\n ------------------------  \n')
 
 console.log('* Pair two numbers *')
 
-let t = PairTwo([2,3,1,2], 4);
+let t = this.PairTwo([2,3,1,2], 4);
 console.log('Array: ', [2,3,1,2])
 console.log('Indexes of pairs: ', t.getIndexesOfPairs())
-t = PairTwo([2,3,1,2], 4);
+t = this.PairTwo([2,3,1,2], 4);
 console.log('Paired using Map: ', t.getPairNumbersByMap())
-t = PairTwo([2,3,1,2], 4);
+t = this.PairTwo([2,3,1,2], 4);
 console.log('Paired using Set: ', t.getPairNumbersBySet())

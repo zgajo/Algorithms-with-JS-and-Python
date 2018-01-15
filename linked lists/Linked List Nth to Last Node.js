@@ -1,4 +1,6 @@
-class NodeNth{
+
+(()=>{
+   class NodeNth{
     constructor(val){
         this.val = val;
         this.nextNode = null;
@@ -31,3 +33,5 @@ b.nextNode = c;
 c.nextNode = d;
 
 console.log(findNth(3, a))
+ 
+})()
