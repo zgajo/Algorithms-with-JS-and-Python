@@ -93,7 +93,7 @@
 
     let arr = [2, 4, 5, 7, 1, 2, 3, 6];
 
-    mergeSort2(arr)
+    mergeSort(arr)
     console.log(arr);
 
 })()
