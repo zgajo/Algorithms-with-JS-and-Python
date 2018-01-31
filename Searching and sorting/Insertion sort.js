@@ -1,6 +1,7 @@
 ( ()=>{
 
-    function insSort(arr){
+    // O(n^2)
+    function insertion_sort(arr){
 
         for(let i = 1; i < arr.length; i++){
 
@@ -24,6 +25,6 @@
 
     let arr = [5,2,4,6,1,3];
 
-    insSort(arr);
+    insertion_sort(arr);
 
 } )()

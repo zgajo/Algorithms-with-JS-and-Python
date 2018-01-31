@@ -1,5 +1,6 @@
 (() => {
 
+    // O(nlogn)
     function mergeSort(A) {
 
         if (A.length > 1) {
