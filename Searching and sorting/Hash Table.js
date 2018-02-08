@@ -37,7 +37,7 @@
 
                     // find either empty slot in stored keys or same key in slots
                     while(this.slots[nextslot] && this.slots[nextslot] != key){
-
+                        
                         nextslot = this.rehash(nextslot, this.slots.length)
 
                     }
