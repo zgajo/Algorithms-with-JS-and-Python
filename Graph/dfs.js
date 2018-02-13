@@ -72,6 +72,33 @@
 
         }
 
+        dfs_iteration(v){
+
+            let stack = [];
+            let visited = {};            
+
+            stack.push(v);
+
+            while(stack.length){
+
+                let s = stack.pop();
+
+                if(!visited[s]) {
+                    visited[s] = true;
+                    console.log("Vertex visited: ", s);
+                }                
+
+
+                for(let w = this.vertex[s].length - 1; w >= 0; w--){
+                    if(!visited[this.vertex[s][w]]){
+                        stack.push(this.vertex[s][w])
+                    }
+                }
+
+            }
+
+        }
+
     }
 
     let g = new graph(5);
@@ -82,4 +109,6 @@
     g.showGraph();
 
     g.dfs(0);
+
+    g.dfs_iteration(0);
 } )()

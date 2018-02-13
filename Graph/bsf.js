@@ -62,19 +62,18 @@
             let queue = [];
             queue.push(s);
 
-            this.visited[s] = true;
-
             while(queue.length > 0){
 
                 let v = queue.shift();
 
                 if(v != undefined) console.log("Visited vertex: ", v);
+                this.visited[s] = true;
 
                 this.vertex[v].forEach(w => {
 
                     if(!this.visited[w]){
 
-                        console.log("edgeTo["+w+"] = " + v)
+                        //console.log("edgeTo["+w+"] = " + v)
                         this.edgeTo[w] = v;
                         this.visited[w] = true;
                         queue.push(w)
@@ -83,7 +82,7 @@
 
                 })
 
-                console.log("queue: ", queue)
+                //console.log("queue: ", queue)
 
             }
 
