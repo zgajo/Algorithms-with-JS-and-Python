@@ -30,6 +30,7 @@
 
         addEdge(v, w){
 
+            // undirected graph
             this.vertex[v].push(w);
             this.vertex[w].push(v);
             ++this.edges;
