@@ -64,7 +64,7 @@
 
 	global.anagram = anagram;
 
-})(window)
+})(global)
 
 
 console.log('\n ------------------------  \n')
