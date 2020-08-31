@@ -32,6 +32,11 @@ class Node {
     this.g = 0;
     this.h = 0;
     this.previous;
+    this.wall = false;
+
+    if (Math.random(1) < 0.1) {
+      this.wall = true;
+    }
 
     this.row = row;
     this.col = col;
@@ -40,6 +45,10 @@ class Node {
   show(color) {
     fill(color);
     noStroke();
+
+    if (this.wall) {
+      fill(0);
+    }
     //rect(x, y, w, h, [detailX], [detailY])
     /**
      * x Number: x-coordinate of the rectangle.
@@ -106,8 +115,9 @@ function setup() {
   h = height / rows;
 
   start = grid.items[0][0];
-  end = grid.items[rows - 10][cols - 1];
-
+  end = grid.items[rows - 1][cols - 1];
+  end.wall = false;
+  start.wall = false;
   openedSet.push(start);
 }
 
@@ -138,7 +148,7 @@ function draw() {
 
     // generate q's 8 successors and set their parents to q
     for (neighbor of current.getNeighbors()) {
-      if (!closedSet.includes(neighbor)) {
+      if (!closedSet.includes(neighbor) && !neighbor.wall) {
         let tempG = current.g + 1;
 
         if (openedSet.includes(neighbor)) {
