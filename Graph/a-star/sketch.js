@@ -1,5 +1,5 @@
-let cols = 25;
-let rows = 25;
+let cols = 50;
+let rows = 50;
 
 let openedSet = [];
 let closedSet = [];
@@ -34,7 +34,7 @@ class Node {
     this.previous;
     this.wall = false;
 
-    if (Math.random(1) < 0.1) {
+    if (Math.random(1) < 0.4) {
       this.wall = true;
     }
 
@@ -151,18 +151,24 @@ function draw() {
       if (!closedSet.includes(neighbor) && !neighbor.wall) {
         let tempG = current.g + 1;
 
+        let newPath = false;
         if (openedSet.includes(neighbor)) {
           if (tempG < neighbor.g) {
             neighbor.g = tempG;
+            newPath = true;
           }
         } else {
+          newPath = true;
           neighbor.g = tempG;
           openedSet.push(neighbor);
         }
 
-        neighbor.previous = current;
-        neighbor.h = heuristic(neighbor, end);
-        neighbor.f = neighbor.g + neighbor.h;
+        // update neighbourgh only if g is better than previous one
+        if (newPath) {
+          neighbor.previous = current;
+          neighbor.h = heuristic(neighbor, end);
+          neighbor.f = neighbor.g + neighbor.h;
+        }
       }
     }
   }
@@ -186,7 +192,7 @@ function draw() {
   }
 
   let temp = current;
-  console.log(closedSet);
+
   path = [temp];
   while (temp.previous) {
     path.push(temp.previous);
