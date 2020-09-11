@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "removeComments": true,
+    "inlineSourceMap": true,
+    "esModuleInterop": true
+  },
+
+  "exclude": ["libs", "node_modules"]
+}
