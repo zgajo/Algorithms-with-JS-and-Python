@@ -1,18 +1,17 @@
-interface Node {
+export interface Node {
   id: number;
   lon: number;
   lat: number;
-  name: string;
 }
 
-interface Way {
+export interface Way {
   id: number;
-  name: string;
-  nodes: Array<Node>;
+  nd: Array<{ ref: number }>;
 }
 
-interface Relation {
-  nodes: Array<Node>;
+export interface Relation {
+  id: number;
+  member: Array<{ ref: number }>;
 }
 
 class RTreeRectangle {
@@ -24,7 +23,7 @@ class RTreeRectangle {
     public y: number,
     public width: number,
     public height: number,
-    public data: any
+    public data: Node | Way | Relation
   ) {}
 
   public static generateEmptyNode(): RTreeRectangle {
