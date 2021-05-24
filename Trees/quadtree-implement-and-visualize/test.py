@@ -27,7 +27,7 @@ for point in points:
 print("Total points: ", len(qtree), len(points))
 
 # draw rectangles
-fig = plt.figure(figsize=(700 / DPI, 500/DPI), dpi=DPI)
+fig = plt.figure(figsize=(1600 / DPI, 1100/DPI), dpi=DPI)
 ax = plt.subplot()
 ax.set_xlim(0, width)
 ax.set_ylim(0, height)
@@ -80,6 +80,28 @@ print("points in radius", len(found_points))
 ax.scatter([p.x for p in found_points], [p.y for p in found_points],
            facecolors="none", edgecolors="g", s=32)
 range.drawCircle(radius, ax, c="g", lw=2)
+
+
+xsrch = np.random.rand(1) * width
+ysrch = np.random.rand(1) * height
+ax.scatter([xsrch], [ysrch], edgecolors="red", facecolors="red", s=75)
+
+sorted_by_distance = qtree.sortChildrenByDistance(
+    Point(xsrch, ysrch), maxCount=10
+)
+print("Sorted:", sorted_by_distance)
+print("furthestDistance:", sorted_by_distance["furthestDistance"])
+
+val: Point
+for i, val in enumerate(sorted_by_distance["found_points"]):
+    print("point", val)
+    c = "green" if i == 0 else "orange"
+    lw = 5 if i == 0 else 2
+    print("sorted_by_distance[", i, "]",
+          val.distanceFrom(Point(xsrch, ysrch)))
+
+    ax.scatter([val.x], [val.y], edgecolors="blue",
+               facecolors="yellow", s=75)
 
 ax.invert_yaxis()
 plt.tight_layout()

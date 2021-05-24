@@ -3,13 +3,34 @@ import math as m
 from matplotlib.patches import Circle
 
 
+def distanceFrom(e: "QuadTree", point: "Point"):
+    dx = e.boundary.xDistanceFrom(point)
+    dy = e.boundary.yDistanceFrom(point)
+
+    return m.sqrt(dx**2+dy**2)
+
+
+def pointDistanceFrom(main_point: "Point", other_point: "Point"):
+    dx = other_point.x - main_point.x
+    dy = other_point.y - main_point.y
+
+    return m.sqrt(dx**2+dy**2)
+
+
 class Point:
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
+        # calculate euclidean distance of two points with coordinates: a(ax, ay) and b(bx, by)
     def distanceToCenter(self, center: "Point"):
         return m.sqrt((center.x-self.x)**2+(center.y-self.y)**2)
+
+    def distanceFrom(self, other_point: "Point"):
+        dx = other_point.x - self.x
+        dy = other_point.y - self.y
+
+        return m.sqrt(dx*dx+dy*dy)
 
 
 class Rectangle:
@@ -31,6 +52,28 @@ class Rectangle:
                     or range.east < self.west
                     or range.north > self.south
                     or range.south < self.north)
+
+    def xDistanceFrom(self, point: Point):
+        # check if x is in current rectangle
+        if self.west <= point.x and point.x <= self.east:
+            return 0
+
+        # return minimum distance from left or right
+        return min(abs(point.x-self.west), abs(point.x-self.east))
+
+    def yDistanceFrom(self, point: Point):
+        # check if x is in current rectangle
+        if self.south <= point.y and point.y <= self.north:
+            return 0
+
+        # return minimum distance from left or right
+        return min(abs(point.y-self.north), abs(point.y-self.south))
+
+    def distanceFrom(self, point: Point):
+        dx = self.xDistanceFrom(point)
+        dy = self.yDistanceFrom(point)
+
+        return m.sqrt(dx*dx+dy*dy)
 
     def draw(self, ax, c='k', lw=1, **kwargs):
         x1, y1 = self.west, self.north
@@ -56,9 +99,9 @@ class Rectangle:
 class QuadTree:
 
     def __init__(self, boundary: Rectangle, capacity=4):
-        self.boundary = boundary
+        self.boundary: Rectangle = boundary
         self.capacity = capacity
-        self.points = []
+        self.points: Point = []
         self.divided = False
         self.nw: QuadTree
         self.ne: QuadTree
@@ -115,6 +158,7 @@ class QuadTree:
         found_points = []
         if not self.boundary.intersects(range):
             return []
+        point: Point
         for point in self.points:
             # width is our radius
             if range.containsPoint(point) and point.distanceToCenter(center) < range.width:
@@ -127,6 +171,74 @@ class QuadTree:
             found_points.extend(self.se.queryRadius(range, center))
 
         return found_points
+
+    def children(self):
+        if self.divided:
+            return [
+                self.ne,
+                self.nw,
+                self.se,
+                self.sw
+            ]
+
+        return []
+
+    def kNearest(self, searchPoint: Point, maxCount, maxDistance, furthestDistance, foundSoFar):
+        found = []
+
+    def sortChildrenByDistance(self, searchPoint: Point, maxCount=1, maxDistance=m.inf, furthestDistance=0, foundSoFar=0):
+        found_points = []
+
+        tree_children = self.children()
+
+        sorted_children = sorted(
+            tree_children,
+            key=lambda e: distanceFrom(e, searchPoint)
+        )
+
+        child: "QuadTree"
+        for child in sorted_children:
+            distance = child.boundary.distanceFrom(searchPoint)
+
+            if distance > maxDistance:
+                return
+
+            if foundSoFar < maxCount or distance < furthestDistance:
+                result = child.sortChildrenByDistance(
+                    searchPoint, maxCount,  maxDistance, furthestDistance, foundSoFar
+                )
+                child_points = result["found_points"]
+                found_points = found_points + child_points
+                foundSoFar += len(child_points)
+                furthestDistance = result["furthestDistance"]
+
+        sorted_points = sorted(
+            self.points,
+            key=lambda e: pointDistanceFrom(e, searchPoint)
+        )
+
+        child_point: "Point"
+        for child_point in sorted_points:
+            distance = child_point.distanceFrom(searchPoint)
+
+            if distance > maxDistance:
+                return
+
+            if foundSoFar < maxCount or distance < furthestDistance:
+                found_points.append(child_point)
+                furthestDistance = max(distance, furthestDistance)
+                foundSoFar += 1
+
+        obj = {
+            "found_points": sorted(
+                found_points,  key=lambda e: pointDistanceFrom(
+                    e, searchPoint
+                )
+            )[0:maxCount],
+            "furthestDistance": furthestDistance
+        }
+
+        return obj
 
     def divide(self):
         center_x = self.boundary.center.x
