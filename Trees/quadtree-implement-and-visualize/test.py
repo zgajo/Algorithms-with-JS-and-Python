@@ -86,11 +86,19 @@ xsrch = np.random.rand(1) * width
 ysrch = np.random.rand(1) * height
 ax.scatter([xsrch], [ysrch], edgecolors="red", facecolors="red", s=75)
 
-sorted_by_distance = qtree.sortChildrenByDistance(
+sorted_by_distance = qtree.kNearest(
     Point(xsrch, ysrch), maxCount=10
 )
 print("Sorted:", sorted_by_distance)
 print("furthestDistance:", sorted_by_distance["furthestDistance"])
+
+range = Rectangle(Point(xsrch, ysrch),
+                  sorted_by_distance["furthestDistance"],
+                  sorted_by_distance["furthestDistance"]
+                  )
+
+
+range.drawCircle(sorted_by_distance["furthestDistance"], ax, c="g", lw=2)
 
 val: Point
 for i, val in enumerate(sorted_by_distance["found_points"]):
