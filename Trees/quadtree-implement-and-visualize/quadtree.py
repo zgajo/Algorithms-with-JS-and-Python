@@ -86,7 +86,7 @@ class Rectangle:
         x2, y2 = self.east, self.south
         # ax.plot(300, 200,
         #         c=c, lw=lw, **kwargs)
-        circle = Circle((self.center.y, self.center.y), radius, edgecolor=c,
+        circle = Circle((self.center.x, self.center.y), radius, edgecolor=c,
                         fill=False, linewidth=lw)
 
         ax.add_patch(circle)
@@ -183,10 +183,7 @@ class QuadTree:
 
         return []
 
-    def kNearest(self, searchPoint: Point, maxCount, maxDistance, furthestDistance, foundSoFar):
-        found = []
-
-    def sortChildrenByDistance(self, searchPoint: Point, maxCount=1, maxDistance=m.inf, furthestDistance=0, foundSoFar=0):
+    def kNearest(self, searchPoint: Point, maxCount=1, maxDistance=m.inf, furthestDistance=0, foundSoFar=0):
         found_points = []
 
         tree_children = self.children()
@@ -204,7 +201,7 @@ class QuadTree:
                 return
 
             if foundSoFar < maxCount or distance < furthestDistance:
-                result = child.sortChildrenByDistance(
+                result = child.kNearest(
                     searchPoint, maxCount,  maxDistance, furthestDistance, foundSoFar
                 )
                 child_points = result["found_points"]
