@@ -129,7 +129,6 @@ export class RTree {
           }
         }
       }
-      console.log("Neces ovdje doci");
       node = targetNode || node.children[0];
     }
 
