@@ -1,0 +1,15 @@
+{
+  "name": "rtreetest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "rbush": "^3.0.1",
+    "rbush-knn": "^3.0.1"
+  }
+}
