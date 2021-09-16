@@ -178,4 +178,34 @@ export class RTree {
     this.data.leaf = false;
     this.data.calcBBox();
   }
+
+  search(bbox: BBox) {
+    let node: Rectangle | undefined = this.data;
+    const result: Rectangle[] = [];
+
+    if (!bbox.intersects(node)) return result;
+
+    const nodesToSearch: Rectangle[] = [];
+
+    while (node) {
+      for (let i = 0; i < node.children.length; i++) {
+        const child = node.children[i];
+        const childBox = node.leaf ? this.toBBox(child) : child;
+
+        if (bbox.intersects(childBox)) {
+          if (node.leaf) {
+            result.push(child);
+          } else if (bbox.contains(childBox)) {
+            this._all(child, result);
+          } else {
+            nodesToSearch.push(child);
+          }
+        }
+      }
+
+      node = nodesToSearch.pop() as Rectangle;
+    }
+
+    return result;
+  }
 }

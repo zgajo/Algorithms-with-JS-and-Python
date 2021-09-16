@@ -32,4 +32,22 @@ export class BBox {
       (Math.max(this.maxY, bbox.maxY) - Math.min(this.minY, bbox.minY))
     );
   }
+
+  intersects(b: BBox) {
+    return (
+      b.minX <= this.maxX &&
+      b.minY <= this.maxY &&
+      b.maxX >= this.minX &&
+      b.maxY >= this.minY
+    );
+  }
+
+  contains(b: BBox) {
+    return (
+      this.minX <= b.minX &&
+      this.minY <= b.minY &&
+      b.maxX <= this.maxX &&
+      b.maxY <= this.maxY
+    );
+  }
 }
