@@ -1,29 +1,58 @@
 // import RBush from "rbush";
 import { parse } from "osm-read";
-import fs from "fs";
-
-import { BBox } from "./BBox";
-import { RTree } from "./RTree";
 import { Node } from "./Node";
+import { RTree } from "./RTree";
 
+import BTree from "./Btree";
+
+const btree = new BTree();
+const bTreeCity = new BTree();
 const rtree = new RTree(10);
 
-var parser = parse({
+const main = () => {
+  // console.log(rtree.search(new Node(42.5059199, 1.5289214)));
+  // console.log("End");
+  // console.log(btree);
+  console.log(bTreeCity.filter((key) => key.startsWith("Me")).valuesArray());
+};
+
+parse({
   filePath: "andorra-latest.osm.pbf",
   endDocument: function () {
-    console.log("document end");
-    console.log(rtree);
+    // console.log(rtree);
+    main();
+    // Najbolje je nakon inserta svih nodeova i waysa u Btree, proci kroz sve
   },
   bounds: function (bounds: any) {
     // console.log("bounds: " + JSON.stringify(bounds));
   },
   node: function (node: any) {
+    // Spremiti node po id-ju u BTREE
     if (node.tags["addr:city"]) {
-      // console.log("node: " + JSON.stringify(node));
+      // Spremiti gradove po imenima u BTree
       rtree.insert(new Node(node.lat, node.lon, node.tags));
     }
+
+    if (node.tags.place) {
+      // console.log(node);
+      bTreeCity.set(node.tags.name, node);
+    }
+    // if (node.id === "6393274537") {
+    //   console.log("NODE: ", node);
+    // }
   },
   way: function (way: any) {
+    if (way.tags.highway) {
+      btree.set(way.id, way);
+      // Spremiti ulice po imenima u BTree
+      // console.log("way", way);
+      // if (way.tags?.name?.includes("Carrer Pau Casals")) {
+      //   console.log(way);
+      // }
+      // if (way.tags?.oneway) {
+      //   console.log("oneway", way);
+      // }
+    }
     // console.log("way: " + JSON.stringify(way));
   },
   relation: function (relation: any) {
