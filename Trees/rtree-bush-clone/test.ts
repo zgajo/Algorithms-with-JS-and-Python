@@ -1,13 +1,16 @@
 // import RBush from "rbush";
 import { parse } from "osm-read";
-import { Node } from "./Node";
+import { Node } from "./src/graph/Node";
 import { RTree } from "./RTree";
 
 import BTree from "./Btree";
+import { Way } from "./src/graph/Way";
 
 const btree = new BTree();
 const bTreeCity = new BTree();
 const bTreeNode = new BTree();
+const bTreeWay: BTree<string, Way> = new BTree();
+const bTreeWayNode: BTree<string, Node> = new BTree();
 const bTreeStreet = new BTree();
 const bTreeAddress = new BTree();
 const rtree = new RTree(10);
@@ -24,11 +27,64 @@ const main = () => {
 3. (if you need geometry for your graph nodes) parse the nodes section of the XML now, recording coordinates for all nodes that you have retained.
 If you are only working on a small data set you can of course simply read everything into memory and do the above analysis in memory.
    */
-  console.log(
-    bTreeAddress.filter((key) => key.startsWith("Vicani")).valuesArray()
-  );
 
-  console.log(bTreeNode.get("51552755"));
+  // bTreeWayNode.deleteKeys(
+  //   bTreeWayNode
+  //     .valuesArray()
+  //     .filter((el) => el.linkCount <= 1)
+  //     .map((el) => el.id)
+  // );
+  bTreeWay.valuesArray().forEach((way) => {
+    way.nodes = way.nodes.filter((node, index) => {
+      if (node.id === "1870000774") {
+        console.log("filter 1870000774", way);
+      }
+
+      if (index === 0 || index === way.nodes.length - 1) {
+        return true;
+      }
+
+      if (node.linkCount > 1) return true;
+
+      return false;
+    });
+
+    // JEDNOSMJERNE
+    // junction	roundabout
+    // oneway=yes
+    // oneway=-1 suprotni smjer
+
+    if (way.tags.oneway == "-1") {
+      for (let i = way.nodes.length - 1; i > 0; i--) {
+        const node1 = way.nodes[i];
+        const node2 = way.nodes[i - 1];
+
+        node1.pointsTo.push(node2);
+      }
+    } else if (
+      way.tags.oneway === "yes" ||
+      way.tags.junction === "roundabout"
+    ) {
+      for (let i = 1; i < way.nodes.length; i++) {
+        const node1 = way.nodes[i - 1];
+        const node2 = way.nodes[i];
+
+        node1.pointsTo.push(node2);
+      }
+    } else {
+      for (let i = 1; i < way.nodes.length; i++) {
+        const node1 = way.nodes[i - 1];
+        const node2 = way.nodes[i];
+
+        node1.pointsTo.push(node2);
+        node2.pointsTo.push(node1);
+      }
+    }
+  });
+
+  console.log(bTreeWay.get("528558237"));
+
+  console.log(bTreeWayNode.size);
 };
 console.time("test");
 
@@ -50,6 +106,7 @@ parse({
     //   // Spremiti gradove po imenima u BTree
     //   rtree.insert(new Node(node.lat, node.lon, node.tags));
     // }
+    bTreeNode.set(node.id, node);
     if (node.tags["addr:housenumber"] && node.tags["addr:street"]) {
       // Spremiti gradove po imenima u BTree
       if (node.tags.name) {
@@ -72,7 +129,7 @@ parse({
     //   console.log("NODE: ", node);
     // }
   },
-  way: function (way: any) {
+  way: function (way: Way) {
     if (way.tags.highway === "residential") {
       // console.log(node);
       if (way.tags.name) {
@@ -110,21 +167,61 @@ parse({
       }
     }
 
-    if (way.tags.highway) {
-      way.nodeRefs.forEach((element: string) => {
-        const node = bTreeNode.get(element);
+    if (
+      (way.tags.highway && way.tags.highway === "motorway") ||
+      way.tags.highway === "trunk" ||
+      way.tags.highway === "primary" ||
+      way.tags.highway === "tertiary" ||
+      way.tags.highway === "unclassified" ||
+      way.tags.highway === "residential" ||
+      way.tags.highway === "trunk_link" ||
+      way.tags.highway === "motorway_link" ||
+      way.tags.highway === "primary_link" ||
+      way.tags.highway === "secondary_link" ||
+      way.tags.highway === "tertiary_link" ||
+      way.tags.highway === "service" ||
+      way.tags.highway === "secondary"
+    ) {
+      // (way.nodeRefs as string[]).forEach((element: string) => {
+      //   const node = bTreeWayNode.get(element);
+      //   way.nodes = [...way.nodes, node];
+      // });
+
+      const newWay = new Way(way);
+
+      newWay.nodeRefs.forEach((element: string) => {
+        const node = bTreeWayNode.get(element);
+
+        if (element === "1870000774") {
+          console.log("1870000774", node, way);
+        }
+
         if (node) {
-          node.linkCount + 1;
-          node.partOfWays.push(way);
+          node.increaseLinkCount();
+          node.partOfWays.push(newWay);
+          newWay.addNode(node);
         } else {
-          bTreeNode.set(element, {
-            id: element,
-            linkCount: 1,
-            partOfWays: [way],
+          const storedNode = bTreeNode.get(element);
+
+          if (element === "1870000774") {
+            console.log("1870000774", "storedNode", storedNode);
+          }
+
+          const newNode = new Node({
+            ...storedNode,
           });
+
+          newNode.addWay(newWay);
+
+          bTreeWayNode.set(element, newNode);
+
+          newWay.addNode(newNode);
         }
       });
-      // bTreeNode.set(way.id, way);
+
+      bTreeWay.set(way.id, newWay);
+
+      // bTreeWayNode.set(way.id, way);
       // Spremiti ulice po imenima u BTree
       // console.log("way", way);
       // if (way.tags?.name?.includes("Carrer Pau Casals")) {
