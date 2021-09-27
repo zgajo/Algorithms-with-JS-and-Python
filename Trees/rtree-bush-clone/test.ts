@@ -9,7 +9,7 @@ import { Way } from "./src/graph/Way";
 const btree = new BTree();
 const bTreeCity = new BTree();
 const bTreeNode = new BTree();
-const bTreeWay: BTree<string, Way> = new BTree();
+export const bTreeWay: BTree<string, Way> = new BTree();
 const bTreeWayNode: BTree<string, Node> = new BTree();
 const bTreeStreet = new BTree();
 const bTreeAddress = new BTree();
@@ -83,6 +83,9 @@ If you are only working on a small data set you can of course simply read everyt
   });
 
   console.log(bTreeWay.get("528558237"));
+
+  console.log("Start node", bTreeWayNode.get("1239777984"));
+  console.log("End node", bTreeWayNode.get("4809492162"));
 
   console.log(bTreeWayNode.size);
 };

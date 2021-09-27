@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  div#mapid
+  script.
+    var mymap = L.map("mapid").setView([42.4381836, 1.4764854], 21);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(mymap);
+
+      var ways =!{JSON.stringify(ways)};   
+      var data = JSON.parse(ways);
+
+      console.log(data)
+      data.forEach(way => {
+        L.polyline(way.nodes, {color: 'blue'}).addTo(mymap);
+      })
+    
