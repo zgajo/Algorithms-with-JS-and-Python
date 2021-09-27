@@ -1,10 +1,12 @@
 // import RBush from "rbush";
 import { parse } from "osm-read";
-import { Node } from "./src/graph/Node";
+import * as path from "path";
 import { RTree } from "./RTree";
 
 import BTree from "./Btree";
-import { Way } from "./src/graph/Way";
+import { Way } from "./graph/Way";
+import { Node } from "./graph/Node";
+import { haversine } from "./aStar";
 
 const btree = new BTree();
 const bTreeCity = new BTree();
@@ -35,17 +37,31 @@ If you are only working on a small data set you can of course simply read everyt
   //     .map((el) => el.id)
   // );
   bTreeWay.valuesArray().forEach((way) => {
-    way.nodes = way.nodes.filter((node, index) => {
-      if (node.id === "1870000774") {
-        console.log("filter 1870000774", way);
-      }
+    let nodesDistance = 0;
+    let startCalculationNode: Node = way.nodes[0];
 
+    way.nodes = way.nodes.filter((node, index) => {
       if (index === 0 || index === way.nodes.length - 1) {
+        if (index !== 0) {
+          nodesDistance += haversine(way.nodes[index - 1], node);
+          startCalculationNode.distance.push(nodesDistance);
+        }
+        // ovo je kad se ne brise
         return true;
       }
 
-      if (node.linkCount > 1) return true;
+      // ovo je kad se ne brise
+      if (node.linkCount > 1) {
+        nodesDistance += haversine(way.nodes[index - 1], node);
+        startCalculationNode.distance.push(nodesDistance);
+        startCalculationNode = node;
+        nodesDistance = 0;
+        return true;
+      }
 
+      nodesDistance += haversine(way.nodes[index - 1], way.nodes[index]);
+
+      // ovo je kad se treba brisati
       return false;
     });
 
@@ -84,15 +100,25 @@ If you are only working on a small data set you can of course simply read everyt
 
   console.log(bTreeWay.get("528558237"));
 
-  console.log("Start node", bTreeWayNode.get("1239777984"));
-  console.log("End node", bTreeWayNode.get("4809492162"));
+  console.log(
+    "Start node",
+    bTreeWayNode.get("52252412")?.lat,
+    bTreeWayNode.get("52252412")?.lon
+  );
+  console.log(
+    "End node",
+    bTreeWayNode.get("51390012")?.lat,
+    bTreeWayNode.get("51390012")?.lon
+  );
+
+  console.log("144217508", bTreeWayNode.get("144217508"));
 
   console.log(bTreeWayNode.size);
 };
 console.time("test");
 
 parse({
-  filePath: "andorra-latest.osm.pbf",
+  filePath: path.join(__dirname, "andorra-latest.osm.pbf"),
   endDocument: function () {
     // console.log(rtree);
     console.timeEnd("test");

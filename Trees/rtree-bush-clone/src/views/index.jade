@@ -3,7 +3,7 @@ extends layout
 block content
   div#mapid
   script.
-    var mymap = L.map("mapid").setView([42.4381836, 1.4764854], 21);
+      var mymap = L.map("mapid").setView([42.4381836, 1.4764854], 13);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution:
@@ -17,4 +17,11 @@ block content
       data.forEach(way => {
         L.polyline(way.nodes, {color: 'blue'}).addTo(mymap);
       })
+
+      var startLatLng = L.latLng(42.462679, 1.4911587);
+      var endLatLng = L.latLng(42.5463649, 1.7309591);
+
+      L.circleMarker(startLatLng, {radius: 10, color: "red"}).addTo(mymap)
+      L.circleMarker(endLatLng, {radius: 10, color: "green"}).addTo(mymap)
+
     

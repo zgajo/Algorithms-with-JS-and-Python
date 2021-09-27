@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import path from "path";
 
-import { bTreeWay } from "../test";
+import { bTreeWay } from "./dataGen";
 
 const app = express();
 const port = 4000;
@@ -19,12 +19,10 @@ app.get("/", (_req: Request, res: Response) => {
   res.render("index", {
     title: "Welcome to Login system",
     ways: JSON.stringify(
-      bTreeWay
-        .valuesArray()
-        .map((way) => ({
-          ...way,
-          nodes: way.nodes.map((node) => [node.lat, node.lon]),
-        }))
+      bTreeWay.valuesArray().map((way) => ({
+        ...way,
+        nodes: way.nodes.map((node) => [node.lat, node.lon]),
+      }))
     ),
   });
 });

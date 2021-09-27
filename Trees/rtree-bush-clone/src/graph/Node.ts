@@ -1,4 +1,4 @@
-import { BBox } from "../../BBox";
+import { BBox } from "../BBox";
 import { distanceInKmBetweenEarthCoordinates } from "../utils/helper";
 import { Way } from "./Way";
 
