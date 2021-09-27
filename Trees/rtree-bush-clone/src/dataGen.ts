@@ -6,13 +6,13 @@ import { RTree } from "./RTree";
 import BTree from "./Btree";
 import { Way } from "./graph/Way";
 import { Node } from "./graph/Node";
-import { haversine } from "./aStar";
+import { AStar, haversine } from "./aStar";
 
 const btree = new BTree();
 const bTreeCity = new BTree();
 const bTreeNode = new BTree();
 export const bTreeWay: BTree<string, Way> = new BTree();
-const bTreeWayNode: BTree<string, Node> = new BTree();
+export const bTreeWayNode: BTree<string, Node> = new BTree();
 const bTreeStreet = new BTree();
 const bTreeAddress = new BTree();
 const rtree = new RTree(10);
@@ -112,6 +112,11 @@ If you are only working on a small data set you can of course simply read everyt
   );
 
   console.log("144217508", bTreeWayNode.get("144217508"));
+
+  new AStar().search(
+    bTreeWayNode.get("52252412") as Node,
+    bTreeWayNode.get("51390012") as Node
+  );
 
   console.log(bTreeWayNode.size);
 };

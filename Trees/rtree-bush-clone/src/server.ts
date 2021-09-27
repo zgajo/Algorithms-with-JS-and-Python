@@ -1,7 +1,9 @@
 import express, { Request, Response } from "express";
 import path from "path";
+import { AStar } from "./aStar";
 
-import { bTreeWay } from "./dataGen";
+import { bTreeWay, bTreeWayNode } from "./dataGen";
+import { Node } from "./graph/Node";
 
 const app = express();
 const port = 4000;
@@ -16,6 +18,13 @@ app.set("view engine", "jade");
 app.get("/", (_req: Request, res: Response) => {
   console.log(bTreeWay.size);
   console.log("object");
+
+  const aStar = new AStar().search(
+    bTreeWayNode.get("52252412") as Node,
+    // bTreeWayNode.get("51390143") as Node,
+    bTreeWayNode.get("51390012") as Node
+  );
+
   res.render("index", {
     title: "Welcome to Login system",
     ways: JSON.stringify(
@@ -24,6 +33,8 @@ app.get("/", (_req: Request, res: Response) => {
         nodes: way.nodes.map((node) => [node.lat, node.lon]),
       }))
     ),
+    path: aStar.route,
+    visited: aStar.visitedNodes,
   });
 });
 

@@ -24,4 +24,14 @@ block content
       L.circleMarker(startLatLng, {radius: 10, color: "red"}).addTo(mymap)
       L.circleMarker(endLatLng, {radius: 10, color: "green"}).addTo(mymap)
 
+      var route =!{JSON.stringify(path)};   
+      var visitedNodes =!{JSON.stringify(visited)};   
+
+      L.polyline(route, {color: 'green'}).addTo(mymap);
+
+      visitedNodes.forEach(node => {
+      L.circleMarker(node, {radius: 5, color: "pink"}).addTo(mymap)
+      })
+      console.log(route)
+
     
