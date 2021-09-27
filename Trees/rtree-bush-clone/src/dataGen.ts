@@ -75,7 +75,11 @@ If you are only working on a small data set you can of course simply read everyt
         const node1 = way.nodes[i];
         const node2 = way.nodes[i - 1];
 
+        nodesDistance = 0;
+        nodesDistance += haversine(node1, node2);
+
         node1.pointsTo.push(node2);
+        node1.distance.push(nodesDistance);
       }
     } else if (
       way.tags.oneway === "yes" ||
@@ -85,15 +89,25 @@ If you are only working on a small data set you can of course simply read everyt
         const node1 = way.nodes[i - 1];
         const node2 = way.nodes[i];
 
+        nodesDistance = 0;
+        nodesDistance += haversine(node1, node2);
+
         node1.pointsTo.push(node2);
+        node1.distance.push(nodesDistance);
       }
     } else {
       for (let i = 1; i < way.nodes.length; i++) {
         const node1 = way.nodes[i - 1];
         const node2 = way.nodes[i];
 
+        nodesDistance = 0;
+        nodesDistance += haversine(node1, node2);
+
         node1.pointsTo.push(node2);
+        node1.distance.push(nodesDistance);
+
         node2.pointsTo.push(node1);
+        node2.distance.push(nodesDistance);
       }
     }
   });
