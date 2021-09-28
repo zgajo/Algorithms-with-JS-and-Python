@@ -88,6 +88,14 @@ export class AStar {
       //find the node with the least f on  the open list, call it "q"
       // pop q off the open list
       for (const index in openedSet) {
+        // console.log(
+        //   "openedSet[index].fScore",
+        //   openedSet[index].fScore,
+        //   "openedSet[lowestFIndex].fScore",
+        //   openedSet[lowestFIndex].fScore,
+        //   openedSet[index].node.id,
+        //   openedSet[lowestFIndex].node.id
+        // );
         if (openedSet[index].fScore < openedSet[lowestFIndex].fScore) {
           lowestFIndex = Number(index);
         }
@@ -96,24 +104,32 @@ export class AStar {
       current = openedSet[lowestFIndex];
 
       if (current.node === end) {
-        console.log("Done!", current, end);
+        // console.log("Done!", current, end);
         break;
       }
 
-      openedSet = removeFromArray(openedSet, current.node);
+      // openedSet = removeFromArray(openedSet, current.node);
+      openedSet.splice(lowestFIndex, 1);
+      openedSet = openedSet;
+
       closedSet.push(current.node);
 
       // generate q's 8 successors and set their parents to q
-      for (const n of current.node.pointsTo) {
-        const neighbor = new SearchNode(n);
+      for (const i in current.node.pointsTo) {
+        const neighbor = new SearchNode(current.node.pointsTo[i]);
+        const neighborDistance = current.node.distance[i];
 
         if (!closedSet.includes(neighbor.node)) {
-          let tempG = current.gScore + 1;
+          let tempG = current.gScore + neighborDistance;
+          // f(n) = g(n) + f(n)
+          // g(n) is the cost of the path from the start node to n,
+          // h(n) is a heuristic function that estimates the cost of the cheapest path from n to the goal.
 
           let newPath = false;
 
-          if (openedSet.includes(neighbor)) {
+          if (openedSet.map((sn) => sn.node.id).includes(neighbor.node.id)) {
             if (tempG < neighbor.gScore) {
+              console.log("Evo ga");
               neighbor.gScore = tempG;
               newPath = true;
             }
@@ -126,7 +142,8 @@ export class AStar {
           // update neighbourgh only if g is better than previous one
           if (newPath) {
             neighbor.previous = current;
-            neighbor.hScore = diagonal(neighbor.node, end);
+
+            neighbor.hScore = haversine(neighbor.node, end);
             neighbor.fScore = neighbor.gScore + neighbor.hScore;
           }
         }
@@ -135,12 +152,10 @@ export class AStar {
 
     let temp = current;
 
-    console.log("openedSet", openedSet.length, openedSet);
+    console.log("openedSet", openedSet.length);
     console.log("closedSet", closedSet.length);
 
     path = [temp];
-
-    console.log("object");
 
     while (temp?.previous) {
       if (temp?.previous) {
@@ -150,7 +165,19 @@ export class AStar {
     }
 
     // console.log(path);
-    // console.log(closedSet);
+
+    let distance = 0;
+    path.forEach((sn) => {
+      if (sn?.previous) {
+        const indexOf = sn.previous.node.pointsTo
+          .map((node) => node.id)
+          .indexOf(sn.node.id);
+
+        distance += sn.previous.node.distance[indexOf];
+      }
+    });
+
+    console.log("distance", distance);
 
     return {
       route: path.map((sn) => [sn?.node.lat, sn?.node.lon]) as [number[]],
