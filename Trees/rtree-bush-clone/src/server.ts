@@ -19,14 +19,32 @@ app.get("/", (_req: Request, res: Response) => {
   console.log(bTreeWay.size);
   console.log("object");
 
+  const nodes = {
+    "1934144326": { id: "1934144326", latLng: [42.5352594, 1.5880477] },
+    "52252412": { id: "52252412", latLng: [42.462679, 1.4911587] },
+    "51390012": { id: "51390012", latLng: [42.5463649, 1.7309591] },
+    "51390143": { id: "51390143", latLng: [42.5423052, 1.7338036] },
+  };
+
+  const startNode = nodes["52252412"];
+  const endNode = nodes["51390012"];
+
   const aStar = new AStar().search(
-    bTreeWayNode.get("52252412") as Node,
+    // bTreeWayNode.get("1934144326") as Node,
+    bTreeWayNode.get(startNode.id) as Node,
     // bTreeWayNode.get("51390143") as Node,
-    bTreeWayNode.get("51390012") as Node
+    bTreeWayNode.get(endNode.id) as Node
+
+    // r.selo -> rovinj
+
+    // bTreeWayNode.get("1454283110") as Node,
+    // bTreeWayNode.get("748833076") as Node
   );
 
   res.render("index", {
     title: "Welcome to Login system",
+    startNode: startNode.latLng,
+    endNode: endNode.latLng,
     ways: JSON.stringify(
       bTreeWay.valuesArray().map((way) => ({
         ...way,

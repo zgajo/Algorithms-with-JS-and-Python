@@ -3,7 +3,16 @@ extends layout
 block content
   div#mapid
   script.
-      var mymap = L.map("mapid").setView([42.4381836, 1.4764854], 13);
+
+      console.log(!{JSON.stringify(startNode)})
+      var startNode =!{JSON.stringify(startNode)};   
+      var endNode =!{JSON.stringify(endNode)};   
+
+
+      // Andorra
+      var mymap = L.map("mapid").setView(startNode, 10);
+      // Rovinj
+      //- var mymap = L.map("mapid").setView([45.0808344, 13.6383927], 8);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution:
@@ -14,12 +23,17 @@ block content
       var data = JSON.parse(ways);
 
       console.log(data)
-      data.forEach(way => {
-        L.polyline(way.nodes, {color: 'blue'}).addTo(mymap);
-      })
+      //- data.forEach(way => {
+      //-   L.polyline(way.nodes, {color: 'blue'}).addTo(mymap);
+      //- })
 
-      var startLatLng = L.latLng(42.462679, 1.4911587);
-      var endLatLng = L.latLng(42.5463649, 1.7309591);
+      // Andorra
+      var startLatLng = L.latLng(startNode);
+      var endLatLng = L.latLng(endNode);
+
+      // Rovinj
+      //- var startLatLng = L.latLng(45.1105710, 13.7094278);
+      //- var endLatLng = L.latLng(45.0808344, 13.6383927);
 
       L.circleMarker(startLatLng, {radius: 10, color: "red"}).addTo(mymap)
       L.circleMarker(endLatLng, {radius: 10, color: "green"}).addTo(mymap)
@@ -29,8 +43,8 @@ block content
 
       L.polyline(route, {color: 'green'}).addTo(mymap);
 
-      visitedNodes.forEach(node => {
-      L.circleMarker(node, {radius: 5, color: "pink"}).addTo(mymap)
+      visitedNodes.forEach((node, index) => {
+      L.circle(node, {circle: 15,title: `index: ${index}, ${node[0]}, ${node[1]}`}).addTo(mymap)
       })
       console.log(route)
 

@@ -112,25 +112,25 @@ If you are only working on a small data set you can of course simply read everyt
     }
   });
 
-  console.log(bTreeWay.get("528558237"));
+  // console.log(bTreeWay.get("528558237"));
 
-  console.log(
-    "Start node",
-    bTreeWayNode.get("52252412")?.lat,
-    bTreeWayNode.get("52252412")?.lon
-  );
-  console.log(
-    "End node",
-    bTreeWayNode.get("51390012")?.lat,
-    bTreeWayNode.get("51390012")?.lon
-  );
+  // console.log(
+  //   "Start node",
+  //   bTreeWayNode.get("52252412")?.lat,
+  //   bTreeWayNode.get("52252412")?.lon
+  // );
+  // console.log(
+  //   "End node",
+  //   bTreeWayNode.get("51390012")?.lat,
+  //   bTreeWayNode.get("51390012")?.lon
+  // );
 
-  console.log("144217508", bTreeWayNode.get("144217508"));
+  // console.log("144217508", bTreeWayNode.get("144217508"));
 
-  new AStar().search(
-    bTreeWayNode.get("52252412") as Node,
-    bTreeWayNode.get("51390012") as Node
-  );
+  // new AStar().search(
+  //   bTreeWayNode.get("52252412") as Node,
+  //   bTreeWayNode.get("51390012") as Node
+  // );
 
   console.log(bTreeWayNode.size);
 };

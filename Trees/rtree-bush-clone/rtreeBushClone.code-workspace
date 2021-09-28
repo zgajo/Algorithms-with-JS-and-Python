@@ -5,6 +5,9 @@
     },
     {
       "path": "../../Graph/a-star"
+    },
+    {
+      "path": "../.."
     }
   ],
   "settings": {}
