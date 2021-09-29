@@ -15,19 +15,35 @@ app.use(express.static("public"));
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 
-app.get("/", (_req: Request, res: Response) => {
-  console.log(bTreeWay.size);
-  console.log("object");
+app.get("/", (req: Request, res: Response) => {
+  console.log(req.query.start);
+  console.log(req.query.end);
 
-  const nodes = {
-    "1934144326": { id: "1934144326", latLng: [42.5352594, 1.5880477] },
-    "52252412": { id: "52252412", latLng: [42.462679, 1.4911587] },
-    "51390012": { id: "51390012", latLng: [42.5463649, 1.7309591] },
-    "51390143": { id: "51390143", latLng: [42.5423052, 1.7338036] },
+  const foundStartNode = bTreeWayNode.get(req.query.start as string) as Node;
+  const startNode = {
+    id: foundStartNode.id,
+    latLng: [foundStartNode?.lat, foundStartNode?.lon],
   };
 
-  const startNode = nodes["52252412"];
-  const endNode = nodes["51390012"];
+  const foundEndNode = bTreeWayNode.get(req.query.end as string) as Node;
+  const endNode = {
+    id: foundEndNode.id,
+    latLng: [foundEndNode?.lat, foundEndNode?.lon],
+  };
+
+  // const nodes = {
+  //   "1934144326": { id: "1934144326", latLng: [42.5352594, 1.5880477] },
+  //   "52252412": { id: "52252412", latLng: [42.462679, 1.4911587] },
+  //   "51390012": { id: "51390012", latLng: [42.5463649, 1.7309591] },
+  //   "51390143": { id: "51390143", latLng: [42.5423052, 1.7338036] },
+  //   // croatia
+  //   "1454283110": { id: "1454283110", latLng: [45.110571, 13.7094278] },
+  //   "2682013028": { id: "2682013028", latLng: [45.0809029, 13.6384089] },
+  //   "748833076": { id: "748833076", latLng: [45.0808344, 13.6383927] },
+  // };
+
+  // const startNode = nodes["2682013028"];
+  // const endNode = nodes["748833076"];
 
   const aStar = new AStar().search(
     // bTreeWayNode.get("1934144326") as Node,
