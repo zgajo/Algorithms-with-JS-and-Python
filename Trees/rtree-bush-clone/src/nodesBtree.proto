@@ -1,0 +1,49 @@
+syntax = "proto3";
+/** BTree of Ways **/
+message BTreeWay {
+  int32 _size = 1;
+  int32 _maxNodeSize = 2;
+  BTreeWayNode _root = 3;
+}
+
+
+message BTreeWayNode {
+  repeated string keys = 1;  
+  repeated Way values = 2;  
+  optional bool isShared = 3;
+  repeated BTreeWayNode children = 4;
+}
+
+
+
+
+
+
+
+
+
+/** BTree of Nodes **/
+message BNodesTree {
+  int32 _size = 1;
+  int32 _maxNodeSize = 2;
+  BTreeNode _root = 3;
+}
+
+message BTreeNode {
+  repeated string keys = 1;
+
+  repeated Node values = 2;
+
+  optional bool isShared = 3;
+  repeated BTreeNode children = 4;
+}
+
+message Node {
+  string nID = 1;
+}
+  
+message Way {
+  string id = 1;
+  repeated string nodeRefs = 2;
+  // map<string, string> tags = 3;
+}

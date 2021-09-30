@@ -1,4 +1,7 @@
 import { defaultComparator, EditRangeResult } from "sorted-btree";
+import * as fs from "fs";
+import * as Schema from "../nodesBtree_pb";
+
 import {
   Break,
   check,
@@ -107,6 +110,29 @@ export default class BTree<K = any, V = any>
     this._compare =
       compare || (defaultComparator as any as (a: K, b: K) => number);
     if (entries) this.setPairs(entries);
+  }
+
+  storeWaysToFile() {
+    console.log("root");
+    const root = new Schema.BTreeWay();
+    const rootNode = new Schema.BTreeWayNode();
+
+    this._root.storeWayTo(rootNode);
+
+    // store root to protobuf
+    root.setRoot(rootNode);
+    root.setSize(this._size);
+    root.setMaxnodesize(this._maxNodeSize);
+
+    const serializedBytes = root.serializeBinary();
+
+    fs.writeFileSync("nodesBtreeWays", serializedBytes);
+
+    console.log(serializedBytes);
+  }
+
+  getRoot() {
+    return this._root;
   }
 
   /////////////////////////////////////////////////////////////////////////////

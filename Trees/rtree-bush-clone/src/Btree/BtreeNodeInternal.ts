@@ -1,6 +1,7 @@
 import { check, EditRangeResult, index } from ".";
 import BTree from "./Btree";
 import { BNode } from "./BtreeNode";
+import * as Schema from "../nodesBtree_pb";
 
 /** Internal node (non-leaf node) ********************************************/
 export class BNodeInternal<K, V> extends BNode<K, V> {
@@ -16,6 +17,23 @@ export class BNodeInternal<K, V> extends BNode<K, V> {
     }
     super(keys);
     this.children = children;
+  }
+
+  storeTo(internalNode: Schema.BTreeWayNode) {
+    this.children.forEach((node) => {
+      const protoNode = new Schema.BTreeWayNode();
+
+      // leaf node
+      if (node.isLeaf) {
+        node.storeWayToLeaf(protoNode);
+      } else {
+        node.storeWayTo(protoNode);
+      }
+
+      internalNode.addChildren(protoNode);
+    });
+
+    this.keys.forEach((key) => internalNode.addKeys(String(key)));
   }
 
   clone(): BNode<K, V> {

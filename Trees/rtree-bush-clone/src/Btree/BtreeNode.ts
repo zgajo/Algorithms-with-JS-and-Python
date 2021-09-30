@@ -1,6 +1,8 @@
 import { EditRangeResult } from "sorted-btree";
 import { check, index, undefVals } from ".";
 import BTree from "./Btree";
+import * as Schema from "../nodesBtree_pb";
+import { Way } from "../graph/Way";
 
 /** Leaf node / base class. **************************************************/
 export class BNode<K, V> {
@@ -17,6 +19,23 @@ export class BNode<K, V> {
     this.values = values || (undefVals as any[]);
     this.isShared = undefined;
   }
+
+  storeWayToLeaf(leafNode: Schema.BTreeWayNode) {
+    this.keys.forEach((key) => leafNode.addKeys(String(key)));
+
+    (this.values as unknown as Way[]).forEach((way: Way) => {
+      const protoWay = new Schema.Way();
+      protoWay.setId(way.id);
+
+      way.nodeRefs.forEach((nr) => {
+        protoWay.addNoderefs(nr);
+      });
+
+      leafNode.addValues(protoWay);
+    });
+  }
+
+  storeWayTo(internalNode: Schema.BTreeWayNode) {}
 
   ///////////////////////////////////////////////////////////////////////////
   // Shared methods /////////////////////////////////////////////////////////

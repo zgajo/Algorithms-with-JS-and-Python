@@ -6,12 +6,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node ./src/server.ts",
-    "start:nodemon": "./node_modules/nodemon/bin/nodemon.js"
+    "start:nodemon": "./node_modules/nodemon/bin/nodemon.js",
+    "protoc": "~/Documents/protoc-3.18.0-osx-x86_64/bin/protoc  --plugin='protoc-gen-ts=./node_modules/.bin/protoc-gen-ts' --js_out=import_style=commonjs,binary:. --ts_out=. "
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "google-protobuf": "^3.18.0",
     "jade": "^1.11.0",
     "osm-read": "^0.7.0",
     "pbf": "^3.2.1",
@@ -19,6 +21,7 @@
     "rbush-knn": "^3.0.1",
     "sorted-btree": "^1.6.0",
     "ts-node": "^10.2.1",
+    "ts-protoc-gen": "^0.15.0",
     "typescript": "^4.4.3"
   },
   "devDependencies": {
