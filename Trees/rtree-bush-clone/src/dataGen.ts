@@ -7,6 +7,7 @@ import BTree from "./Btree";
 import { Way } from "./graph/Way";
 import { Node } from "./graph/Node";
 import { AStar, haversine } from "./aStar";
+import { connectNodesInWay } from "./utils/helper";
 
 const btree = new BTree();
 const bTreeCity = new BTree();
@@ -40,81 +41,35 @@ If you are only working on a small data set you can of course simply read everyt
   //     .filter((el) => el.linkCount <= 1)
   //     .map((el) => el.id)
   // );
-  // bTreeWay.valuesArray().forEach((way) => {
-  //   let nodesDistance = 0;
-  //   let startCalculationNode: Node = way.nodes[0];
+  bTreeWay.valuesArray().forEach((way) => {
+    let nodesDistance = 0;
+    let startCalculationNode: Node = way.nodes[0];
 
-  //   way.nodes = way.nodes.filter((node, index) => {
-  //     if (index === 0 || index === way.nodes.length - 1) {
-  //       if (index !== 0) {
-  //         nodesDistance += haversine(way.nodes[index - 1], node);
-  //         startCalculationNode.distance.push(nodesDistance);
-  //       }
-  //       // ovo je kad se ne brise
-  //       return true;
-  //     }
-
-  //     // ovo je kad se ne brise
-  //     if (node.linkCount > 1) {
-  //       nodesDistance += haversine(way.nodes[index - 1], node);
-  //       startCalculationNode.distance.push(nodesDistance);
-  //       startCalculationNode = node;
-  //       nodesDistance = 0;
-  //       return true;
-  //     }
-
-  //     nodesDistance += haversine(way.nodes[index - 1], way.nodes[index]);
-
-  //     // ovo je kad se treba brisati
-  //     return false;
-  //   });
-
-  //   // JEDNOSMJERNE
-  //   // junction	roundabout
-  //   // oneway=yes
-  //   // oneway=-1 suprotni smjer
-
-  //   if (way.tags.oneway == "-1") {
-  //     for (let i = way.nodes.length - 1; i > 0; i--) {
-  //       const node1 = way.nodes[i];
-  //       const node2 = way.nodes[i - 1];
-
-  //       nodesDistance = 0;
-  //       nodesDistance += haversine(node1, node2);
-
-  //       node1.pointsTo.push(node2);
-  //       node1.distance.push(nodesDistance);
-  //     }
-  //   } else if (
-  //     way.tags.oneway === "yes" ||
-  //     way.tags.junction === "roundabout"
-  //   ) {
-  //     for (let i = 1; i < way.nodes.length; i++) {
-  //       const node1 = way.nodes[i - 1];
-  //       const node2 = way.nodes[i];
-
-  //       nodesDistance = 0;
-  //       nodesDistance += haversine(node1, node2);
-
-  //       node1.pointsTo.push(node2);
-  //       node1.distance.push(nodesDistance);
-  //     }
-  //   } else {
-  //     for (let i = 1; i < way.nodes.length; i++) {
-  //       const node1 = way.nodes[i - 1];
-  //       const node2 = way.nodes[i];
-
-  //       nodesDistance = 0;
-  //       nodesDistance += haversine(node1, node2);
-
-  //       node1.pointsTo.push(node2);
-  //       node1.distance.push(nodesDistance);
-
-  //       node2.pointsTo.push(node1);
-  //       node2.distance.push(nodesDistance);
-  //     }
-  //   }
-  // });
+    // Remove nodes from way
+    way.nodes = way.nodes.filter((node, index) => {
+      if (index === 0) {
+        return true;
+      }
+      // zadnji node
+      if (index === way.nodes.length - 1) {
+        nodesDistance += haversine(way.nodes[index - 1], node);
+        connectNodesInWay(way, startCalculationNode, node, nodesDistance);
+        // ovo je kad se ne brise
+        return true;
+      }
+      // ovo je kad se ne brise
+      if (node.linkCount > 1) {
+        nodesDistance += haversine(way.nodes[index - 1], node);
+        connectNodesInWay(way, startCalculationNode, node, nodesDistance);
+        startCalculationNode = node;
+        nodesDistance = 0;
+        return true;
+      }
+      nodesDistance += haversine(way.nodes[index - 1], way.nodes[index]);
+      // ovo je kad se treba brisati
+      return false;
+    });
+  });
 
   // console.log(bTreeWay.get("528558237"));
 
@@ -137,9 +92,10 @@ If you are only working on a small data set you can of course simply read everyt
   // );
 
   console.log(bTreeWayNode.size);
+  console.log("end parse");
 };
 console.time("test");
-
+console.log("start parse");
 parse({
   filePath: path.join(__dirname, "andorra-latest.osm.pbf"),
   endDocument: function () {

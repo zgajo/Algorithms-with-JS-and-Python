@@ -1,18 +1,51 @@
 import { parse } from "osm-read";
 import * as path from "path";
-import { RTree } from "./RTree";
-
+import { haversine } from "./aStar";
 import BTree from "./Btree";
-import { Way } from "./graph/Way";
 import { Node } from "./graph/Node";
-import * as Schema from "./nodesBtree_pb";
+import { Way } from "./graph/Way";
+import { connectNodesInWay } from "./utils/helper";
 
 const bTreeNode = new BTree();
 export const bTreeWay: BTree<string, Way> = new BTree();
 export const bTreeWayNode: BTree<string, Node> = new BTree();
 
 const main = () => {
+  bTreeWay.valuesArray().forEach((way) => {
+    let nodesDistance = 0;
+    let startCalculationNode: Node = way.nodes[0];
+
+    // Remove nodes from way
+    way.nodes = way.nodes.filter((node, index) => {
+      if (index === 0) {
+        return true;
+      }
+      // zadnji node
+      if (index === way.nodes.length - 1) {
+        nodesDistance += haversine(way.nodes[index - 1], node);
+        connectNodesInWay(way, startCalculationNode, node, nodesDistance);
+        // ovo je kad se ne brise
+        return true;
+      }
+      // ovo je kad se ne brise
+      if (node.linkCount > 1) {
+        nodesDistance += haversine(way.nodes[index - 1], node);
+        connectNodesInWay(way, startCalculationNode, node, nodesDistance);
+        startCalculationNode = node;
+        nodesDistance = 0;
+        return true;
+      }
+      nodesDistance += haversine(way.nodes[index - 1], way.nodes[index]);
+      // ovo je kad se treba brisati
+      return false;
+    });
+
+    // Connect nodes in way
+    // connectNodesInWay(way);
+  });
+
   bTreeWay.storeWaysToFile();
+  bTreeWayNode.storeNodesToFile();
 };
 
 parse({
