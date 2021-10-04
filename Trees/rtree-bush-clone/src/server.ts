@@ -18,6 +18,17 @@ app.set("view engine", "jade");
 app.get("/", (req: Request, res: Response) => {
   console.log(req.query.start);
   console.log(req.query.end);
+  if (!req.query.start || !req.query.end) {
+    return res.render("index", {
+      title: "Welcome to Login system",
+      ways: JSON.stringify(
+        bTreeWay.valuesArray().map((way) => ({
+          ...way,
+          nodes: way.nodes.map((node) => [node.lat, node.lon]),
+        }))
+      ),
+    });
+  }
 
   const foundStartNode = bTreeWayNode.get(req.query.start as string) as Node;
   const startNode = {

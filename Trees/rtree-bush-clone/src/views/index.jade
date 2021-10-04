@@ -44,7 +44,13 @@ block content
       L.polyline(route, {color: 'green'}).addTo(mymap);
 
       visitedNodes.forEach((node, index) => {
-      L.circle(node, {circle: 15,title: `index: ${index}, ${node[0]}, ${node[1]}`}).addTo(mymap)
+        let popup = `<div>id: ${node.id}</div>`;
+        popup += `<div>coordinates: ${node.lat}, ${node.lon}</div>`;
+        node.distance.forEach((d, i) => {
+          popup += `<div>pointsTo: ${node.pointsTo[i]}, distance: ${d}</div>`
+        })
+
+      L.marker([node.lat, node.lon], {circle: 15,title: `index: ${index}, ${node.lat}, ${node.lon}`}).addTo(mymap).bindPopup(popup);
       })
       console.log(route)
 

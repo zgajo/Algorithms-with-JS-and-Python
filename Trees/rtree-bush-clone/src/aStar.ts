@@ -116,10 +116,17 @@ export class AStar {
 
       // generate q's 8 successors and set their parents to q
       for (const i in current.node.pointsTo) {
-        const neighbor = new SearchNode(current.node.pointsTo[i]);
+        const newNode = current.node.pointsTo[i];
+        const newSearchNode = openedSet.find((sn) => sn.node === newNode);
+
+        const neighbor =
+          newSearchNode || new SearchNode(current.node.pointsTo[i]);
         const neighborDistance = current.node.distance[i];
 
         if (!closedSet.includes(neighbor.node)) {
+          if (neighbor.node.id === "1572470677") {
+            console.log(neighbor);
+          }
           let tempG = current.gScore + neighborDistance;
           // f(n) = g(n) + f(n)
           // g(n) is the cost of the path from the start node to n,
@@ -181,7 +188,11 @@ export class AStar {
 
     return {
       route: path.map((sn) => [sn?.node.lat, sn?.node.lon]) as [number[]],
-      visitedNodes: closedSet.map((node) => [node.lat, node.lon]),
+      visitedNodes: closedSet.map((node) => ({
+        ...node,
+        pointsTo: node.pointsTo.map((p) => p.id),
+        partOfWays: node.partOfWays.map((w) => w.id),
+      })),
     };
   }
 }
