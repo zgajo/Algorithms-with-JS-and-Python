@@ -19,7 +19,7 @@ export class BNodeInternal<K, V> extends BNode<K, V> {
     this.children = children;
   }
 
-  storeTo(internalNode: Schema.BTreeWayNode) {
+  storeWayTo(internalNode: Schema.BTreeWayNode) {
     this.children.forEach((node) => {
       const protoNode = new Schema.BTreeWayNode();
 
@@ -28,6 +28,23 @@ export class BNodeInternal<K, V> extends BNode<K, V> {
         node.storeWayToLeaf(protoNode);
       } else {
         node.storeWayTo(protoNode);
+      }
+
+      internalNode.addChildren(protoNode);
+    });
+
+    this.keys.forEach((key) => internalNode.addKeys(String(key)));
+  }
+
+  storeNodeTo(internalNode: Schema.BTreeNode) {
+    this.children.forEach((node) => {
+      const protoNode = new Schema.BTreeNode();
+
+      // leaf node
+      if (node.isLeaf) {
+        node.storeNodeToLeaf(protoNode);
+      } else {
+        node.storeNodeTo(protoNode);
       }
 
       internalNode.addChildren(protoNode);

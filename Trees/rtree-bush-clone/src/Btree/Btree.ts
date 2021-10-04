@@ -124,11 +124,28 @@ export default class BTree<K = any, V = any>
     root.setSize(this._size);
     root.setMaxnodesize(this._maxNodeSize);
 
+    console.log(root.toObject());
     const serializedBytes = root.serializeBinary();
 
     fs.writeFileSync("nodesBtreeWays", serializedBytes);
+  }
 
-    console.log(serializedBytes);
+  storeNodesToFile() {
+    console.log("rootNode");
+    const root = new Schema.BNodesTree();
+    const rootNode = new Schema.BTreeNode();
+
+    this._root.storeNodeTo(rootNode);
+
+    // store root to protobuf
+    root.setRoot(rootNode);
+    root.setSize(this._size);
+    root.setMaxnodesize(this._maxNodeSize);
+
+    console.log(root.toObject());
+    const serializedBytes = root.serializeBinary();
+
+    fs.writeFileSync("nodesBtreeNodes", serializedBytes);
   }
 
   getRoot() {

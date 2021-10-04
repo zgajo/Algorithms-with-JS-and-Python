@@ -3,6 +3,7 @@ import { check, index, undefVals } from ".";
 import BTree from "./Btree";
 import * as Schema from "../nodesBtree_pb";
 import { Way } from "../graph/Way";
+import { Node } from "../graph/Node";
 
 /** Leaf node / base class. **************************************************/
 export class BNode<K, V> {
@@ -31,11 +32,46 @@ export class BNode<K, V> {
         protoWay.addNoderefs(nr);
       });
 
+      for (const [key, value] of Object.entries(way.tags)) {
+        protoWay.getTagsMap().set(key, value);
+      }
+
       leafNode.addValues(protoWay);
     });
   }
 
+  storeNodeToLeaf(leafNode: Schema.BTreeNode) {
+    this.keys.forEach((key) => leafNode.addKeys(String(key)));
+
+    (this.values as unknown as Node[]).forEach((node: Node) => {
+      const protoNode = new Schema.Node();
+      protoNode.setId(node.id);
+      protoNode.setLat(node.lat);
+      protoNode.setLon(node.lon);
+      protoNode.setMaxx(node.maxX);
+      protoNode.setMaxy(node.maxY);
+      protoNode.setMinx(node.minX);
+      protoNode.setMiny(node.minY);
+
+      node.distance.forEach((d, index) => {
+        protoNode.addDistance(d);
+        protoNode.addPointsto(node.pointsTo[index].id);
+      });
+
+      node.partOfWays.forEach((w, index) => {
+        protoNode.addPartofways(w.id);
+      });
+
+      for (const [key, value] of Object.entries(node.tags || {})) {
+        protoNode.getTagsMap().set(key, value);
+      }
+
+      leafNode.addValues(protoNode);
+    });
+  }
+
   storeWayTo(internalNode: Schema.BTreeWayNode) {}
+  storeNodeTo(internalNode: Schema.BTreeNode) {}
 
   ///////////////////////////////////////////////////////////////////////////
   // Shared methods /////////////////////////////////////////////////////////

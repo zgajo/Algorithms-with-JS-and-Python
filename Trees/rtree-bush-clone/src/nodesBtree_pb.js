@@ -116,7 +116,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.Node = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.Node.repeatedFields_, null);
 };
 goog.inherits(proto.Node, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -1190,6 +1190,13 @@ proto.BTreeNode.prototype.clearChildrenList = function() {
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.Node.repeatedFields_ = [8,9,10];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1221,7 +1228,17 @@ proto.Node.prototype.toObject = function(opt_includeInstance) {
  */
 proto.Node.toObject = function(includeInstance, msg) {
   var f, obj = {
-    nid: jspb.Message.getFieldWithDefault(msg, 1, "")
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    lat: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
+    lon: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
+    maxx: jspb.Message.getFloatingPointFieldWithDefault(msg, 4, 0.0),
+    maxy: jspb.Message.getFloatingPointFieldWithDefault(msg, 5, 0.0),
+    minx: jspb.Message.getFloatingPointFieldWithDefault(msg, 6, 0.0),
+    miny: jspb.Message.getFloatingPointFieldWithDefault(msg, 7, 0.0),
+    partofwaysList: (f = jspb.Message.getRepeatedField(msg, 8)) == null ? undefined : f,
+    pointstoList: (f = jspb.Message.getRepeatedField(msg, 9)) == null ? undefined : f,
+    distanceList: (f = jspb.Message.getRepeatedFloatingPointField(msg, 10)) == null ? undefined : f,
+    tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -1260,7 +1277,51 @@ proto.Node.deserializeBinaryFromReader = function(msg, reader) {
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setNid(value);
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setLat(value);
+      break;
+    case 3:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setLon(value);
+      break;
+    case 4:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setMaxx(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setMaxy(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setMinx(value);
+      break;
+    case 7:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setMiny(value);
+      break;
+    case 8:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addPartofways(value);
+      break;
+    case 9:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addPointsto(value);
+      break;
+    case 10:
+      var values = /** @type {!Array<number>} */ (reader.isDelimited() ? reader.readPackedFloat() : [reader.readFloat()]);
+      for (var i = 0; i < values.length; i++) {
+        msg.addDistance(values[i]);
+      }
+      break;
+    case 11:
+      var value = msg.getTagsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     default:
       reader.skipField();
@@ -1291,21 +1352,88 @@ proto.Node.prototype.serializeBinary = function() {
  */
 proto.Node.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getNid();
+  f = message.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
+  f = message.getLat();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      2,
+      f
+    );
+  }
+  f = message.getLon();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      3,
+      f
+    );
+  }
+  f = message.getMaxx();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      4,
+      f
+    );
+  }
+  f = message.getMaxy();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      5,
+      f
+    );
+  }
+  f = message.getMinx();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      6,
+      f
+    );
+  }
+  f = message.getMiny();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      7,
+      f
+    );
+  }
+  f = message.getPartofwaysList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      8,
+      f
+    );
+  }
+  f = message.getPointstoList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      9,
+      f
+    );
+  }
+  f = message.getDistanceList();
+  if (f.length > 0) {
+    writer.writePackedFloat(
+      10,
+      f
+    );
+  }
+  f = message.getTagsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(11, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
 };
 
 
 /**
- * optional string nID = 1;
+ * optional string id = 1;
  * @return {string}
  */
-proto.Node.prototype.getNid = function() {
+proto.Node.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -1314,9 +1442,250 @@ proto.Node.prototype.getNid = function() {
  * @param {string} value
  * @return {!proto.Node} returns this
  */
-proto.Node.prototype.setNid = function(value) {
+proto.Node.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
+
+
+/**
+ * optional float lat = 2;
+ * @return {number}
+ */
+proto.Node.prototype.getLat = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 2, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.setLat = function(value) {
+  return jspb.Message.setProto3FloatField(this, 2, value);
+};
+
+
+/**
+ * optional float lon = 3;
+ * @return {number}
+ */
+proto.Node.prototype.getLon = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 3, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.setLon = function(value) {
+  return jspb.Message.setProto3FloatField(this, 3, value);
+};
+
+
+/**
+ * optional float maxX = 4;
+ * @return {number}
+ */
+proto.Node.prototype.getMaxx = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 4, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.setMaxx = function(value) {
+  return jspb.Message.setProto3FloatField(this, 4, value);
+};
+
+
+/**
+ * optional float maxY = 5;
+ * @return {number}
+ */
+proto.Node.prototype.getMaxy = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 5, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.setMaxy = function(value) {
+  return jspb.Message.setProto3FloatField(this, 5, value);
+};
+
+
+/**
+ * optional float minX = 6;
+ * @return {number}
+ */
+proto.Node.prototype.getMinx = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 6, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.setMinx = function(value) {
+  return jspb.Message.setProto3FloatField(this, 6, value);
+};
+
+
+/**
+ * optional float minY = 7;
+ * @return {number}
+ */
+proto.Node.prototype.getMiny = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 7, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.setMiny = function(value) {
+  return jspb.Message.setProto3FloatField(this, 7, value);
+};
+
+
+/**
+ * repeated string partOfWays = 8;
+ * @return {!Array<string>}
+ */
+proto.Node.prototype.getPartofwaysList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 8));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.setPartofwaysList = function(value) {
+  return jspb.Message.setField(this, 8, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.addPartofways = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 8, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.clearPartofwaysList = function() {
+  return this.setPartofwaysList([]);
+};
+
+
+/**
+ * repeated string pointsTo = 9;
+ * @return {!Array<string>}
+ */
+proto.Node.prototype.getPointstoList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 9));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.setPointstoList = function(value) {
+  return jspb.Message.setField(this, 9, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.addPointsto = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 9, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.clearPointstoList = function() {
+  return this.setPointstoList([]);
+};
+
+
+/**
+ * repeated float distance = 10;
+ * @return {!Array<number>}
+ */
+proto.Node.prototype.getDistanceList = function() {
+  return /** @type {!Array<number>} */ (jspb.Message.getRepeatedFloatingPointField(this, 10));
+};
+
+
+/**
+ * @param {!Array<number>} value
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.setDistanceList = function(value) {
+  return jspb.Message.setField(this, 10, value || []);
+};
+
+
+/**
+ * @param {number} value
+ * @param {number=} opt_index
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.addDistance = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 10, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.clearDistanceList = function() {
+  return this.setDistanceList([]);
+};
+
+
+/**
+ * map<string, string> tags = 11;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.Node.prototype.getTagsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 11, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.Node} returns this
+ */
+proto.Node.prototype.clearTagsMap = function() {
+  this.getTagsMap().clear();
+  return this;};
 
 
 
@@ -1359,7 +1728,8 @@ proto.Way.prototype.toObject = function(opt_includeInstance) {
 proto.Way.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    noderefsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
+    noderefsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
+    tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -1404,6 +1774,12 @@ proto.Way.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.addNoderefs(value);
       break;
+    case 3:
+      var value = msg.getTagsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
+      break;
     default:
       reader.skipField();
       break;
@@ -1446,6 +1822,10 @@ proto.Way.serializeBinaryToWriter = function(message, writer) {
       2,
       f
     );
+  }
+  f = message.getTagsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
 
@@ -1503,6 +1883,28 @@ proto.Way.prototype.addNoderefs = function(value, opt_index) {
 proto.Way.prototype.clearNoderefsList = function() {
   return this.setNoderefsList([]);
 };
+
+
+/**
+ * map<string, string> tags = 3;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.Way.prototype.getTagsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 3, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.Way} returns this
+ */
+proto.Way.prototype.clearTagsMap = function() {
+  this.getTagsMap().clear();
+  return this;};
 
 
 goog.object.extend(exports, proto);

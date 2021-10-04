@@ -144,9 +144,44 @@ export namespace BTreeNode {
 }
 
 export class Node extends jspb.Message {
-  getNid(): string;
-  setNid(value: string): void;
+  getId(): string;
+  setId(value: string): void;
 
+  getLat(): number;
+  setLat(value: number): void;
+
+  getLon(): number;
+  setLon(value: number): void;
+
+  getMaxx(): number;
+  setMaxx(value: number): void;
+
+  getMaxy(): number;
+  setMaxy(value: number): void;
+
+  getMinx(): number;
+  setMinx(value: number): void;
+
+  getMiny(): number;
+  setMiny(value: number): void;
+
+  clearPartofwaysList(): void;
+  getPartofwaysList(): Array<string>;
+  setPartofwaysList(value: Array<string>): void;
+  addPartofways(value: string, index?: number): string;
+
+  clearPointstoList(): void;
+  getPointstoList(): Array<string>;
+  setPointstoList(value: Array<string>): void;
+  addPointsto(value: string, index?: number): string;
+
+  clearDistanceList(): void;
+  getDistanceList(): Array<number>;
+  setDistanceList(value: Array<number>): void;
+  addDistance(value: number, index?: number): number;
+
+  getTagsMap(): jspb.Map<string, string>;
+  clearTagsMap(): void;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Node.AsObject;
   static toObject(includeInstance: boolean, msg: Node): Node.AsObject;
@@ -159,7 +194,17 @@ export class Node extends jspb.Message {
 
 export namespace Node {
   export type AsObject = {
-    nid: string,
+    id: string,
+    lat: number,
+    lon: number,
+    maxx: number,
+    maxy: number,
+    minx: number,
+    miny: number,
+    partofwaysList: Array<string>,
+    pointstoList: Array<string>,
+    distanceList: Array<number>,
+    tagsMap: Array<[string, string]>,
   }
 }
 
@@ -172,6 +217,8 @@ export class Way extends jspb.Message {
   setNoderefsList(value: Array<string>): void;
   addNoderefs(value: string, index?: number): string;
 
+  getTagsMap(): jspb.Map<string, string>;
+  clearTagsMap(): void;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Way.AsObject;
   static toObject(includeInstance: boolean, msg: Way): Way.AsObject;
@@ -186,6 +233,7 @@ export namespace Way {
   export type AsObject = {
     id: string,
     noderefsList: Array<string>,
+    tagsMap: Array<[string, string]>,
   }
 }
 
