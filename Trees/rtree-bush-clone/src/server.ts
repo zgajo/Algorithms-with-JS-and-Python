@@ -1,9 +1,9 @@
 import express, { Request, Response } from "express";
 import path from "path";
-import { AStar } from "./aStar";
+import { AStar } from "./graph/aStar";
 
 import { bTreeWay, bTreeWayNode } from "./dataGen";
-import { Node } from "./graph/Node";
+import { Node } from "./trees/Node";
 
 const app = express();
 const port = 4000;

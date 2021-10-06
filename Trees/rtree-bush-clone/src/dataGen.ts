@@ -6,7 +6,7 @@ import { RTree } from "./trees/RTree/RTree";
 import BTree from "./trees/Btree";
 import { Way } from "./trees/Way";
 import { Node } from "./trees/Node";
-import { AStar, haversine } from "./aStar";
+import { AStar, haversine } from "./graph/aStar";
 import { connectNodesInWay } from "./utils/helper";
 
 const btree = new BTree();

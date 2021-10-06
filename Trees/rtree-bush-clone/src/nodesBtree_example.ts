@@ -1,6 +1,6 @@
 import { parse } from "osm-read";
 import * as path from "path";
-import { haversine } from "./aStar";
+import { haversine } from "./graph/aStar";
 import BTree from "./trees/Btree";
 import { Node } from "./trees/Node";
 import { Way } from "./trees/Way";
