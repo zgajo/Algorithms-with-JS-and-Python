@@ -2,7 +2,7 @@ import { defaultComparator, EditRangeResult } from "sorted-btree";
 import * as fs from "fs";
 import * as path from "path";
 
-import * as Schema from "../../nodesBtree_pb";
+import * as Schema from "../../proto/nodesBtree_pb";
 
 import {
   Break,

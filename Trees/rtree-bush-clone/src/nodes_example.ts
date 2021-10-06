@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as process from "process";
-import * as Schema from "./nodes_pb";
+import * as Schema from "./proto/nodes_pb";
 
 const { Node } = Schema;
 

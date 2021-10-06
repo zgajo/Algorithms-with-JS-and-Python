@@ -1,7 +1,7 @@
 import { EditRangeResult } from "sorted-btree";
 import { check, index, undefVals } from ".";
 import BTree from "./Btree";
-import * as Schema from "../../nodesBtree_pb";
+import * as Schema from "../../proto/nodesBtree_pb";
 import { Way } from "../Way";
 import { Node } from "../Node";
 

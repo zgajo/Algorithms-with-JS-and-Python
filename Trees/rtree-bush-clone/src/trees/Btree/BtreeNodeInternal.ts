@@ -1,7 +1,7 @@
 import { check, EditRangeResult, index } from ".";
 import BTree from "./Btree";
 import { BNode } from "./BtreeNode";
-import * as Schema from "../../nodesBtree_pb";
+import * as Schema from "../../proto/nodesBtree_pb";
 
 /** Internal node (non-leaf node) ********************************************/
 export class BNodeInternal<K, V> extends BNode<K, V> {
