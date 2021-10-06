@@ -1,9 +1,9 @@
 import { parse } from "osm-read";
 import * as path from "path";
 import { haversine } from "./aStar";
-import BTree from "./Btree";
-import { Node } from "./graph/RTree/Node";
-import { Way } from "./graph/RTree/Way";
+import BTree from "./trees/Btree";
+import { Node } from "./trees/Node";
+import { Way } from "./trees/Way";
 import { connectNodesInWay } from "./utils/helper";
 
 const bTreeLoad = new BTree();

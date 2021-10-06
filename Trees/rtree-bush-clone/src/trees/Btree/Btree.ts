@@ -2,7 +2,7 @@ import { defaultComparator, EditRangeResult } from "sorted-btree";
 import * as fs from "fs";
 import * as path from "path";
 
-import * as Schema from "../nodesBtree_pb";
+import * as Schema from "../../nodesBtree_pb";
 
 import {
   Break,
@@ -18,8 +18,8 @@ import {
 import { BNode } from "./BtreeNode";
 import { BNodeInternal } from "./BtreeNodeInternal";
 import { ISortedMap, ISortedMapF } from "./interfaces";
-import { Node } from "../graph/RTree/Node";
-import { Way } from "../graph/RTree/Way";
+import { Node } from "../Node";
+import { Way } from "../Way";
 /**
  * A reasonably fast collection of key-value pairs with a powerful API.
  * Largely compatible with the standard Map. BTree is a B+ tree data structure,

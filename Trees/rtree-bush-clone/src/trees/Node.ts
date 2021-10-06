@@ -1,5 +1,5 @@
-import { distanceInKmBetweenEarthCoordinates } from "../../utils/helper";
-import { BBox } from "./BBox";
+import { distanceInKmBetweenEarthCoordinates } from "../utils/helper";
+import { BBox } from "./RTree/BBox";
 import { Way } from "./Way";
 
 export class Node extends BBox {

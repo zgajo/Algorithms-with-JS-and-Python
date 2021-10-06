@@ -1,5 +1,5 @@
-import { Node } from "../graph/RTree/Node";
-import { Way } from "../graph/RTree/Way";
+import { Node } from "../trees/Node";
+import { Way } from "../trees/Way";
 
 function degreesToRadians(degrees: number) {
   return (degrees * Math.PI) / 180;

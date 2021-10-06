@@ -1,4 +1,4 @@
-import { Node } from "./graph/RTree/Node";
+import { Node } from "./trees/Node";
 
 export function heuristic(a: Node, b: Node) {
   // euclidian distance
