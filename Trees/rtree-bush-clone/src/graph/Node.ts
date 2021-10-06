@@ -17,18 +17,22 @@ export class Node extends BBox {
     lat: number;
     lon: number;
     tags?: { [key: string]: any };
+    partOfWays?: Way[];
+    linkCount?: number;
+    pointsTo?: Node[];
+    distance?: number[];
   }) {
     super(node.lat, node.lon, node.lat, node.lon);
 
     this.id = node.id;
     this.lon = node.lon;
     this.lat = node.lat;
-    this.pointsTo = [];
-    this.distance = [];
+    this.pointsTo = node.pointsTo || [];
+    this.distance = node.distance || [];
 
     this.tags = node.tags;
-    this.partOfWays = [];
-    this.linkCount = 1;
+    this.partOfWays = node.partOfWays || [];
+    this.linkCount = node.linkCount || 1;
   }
 
   calculateDistance(to: Node): number {

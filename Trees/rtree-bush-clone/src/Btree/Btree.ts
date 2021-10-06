@@ -1,5 +1,7 @@
 import { defaultComparator, EditRangeResult } from "sorted-btree";
 import * as fs from "fs";
+import * as path from "path";
+
 import * as Schema from "../nodesBtree_pb";
 
 import {
@@ -16,6 +18,8 @@ import {
 import { BNode } from "./BtreeNode";
 import { BNodeInternal } from "./BtreeNodeInternal";
 import { ISortedMap, ISortedMapF } from "./interfaces";
+import { Node } from "../graph/Node";
+import { Way } from "../graph/Way";
 /**
  * A reasonably fast collection of key-value pairs with a powerful API.
  * Largely compatible with the standard Map. BTree is a B+ tree data structure,
@@ -130,7 +134,7 @@ export default class BTree<K = any, V = any>
     fs.writeFileSync("nodesBtreeWays", serializedBytes);
   }
 
-  storeNodesToFile() {
+  storeNodesToFile(filePath: string) {
     console.log("rootNode");
     const root = new Schema.BNodesTree();
     const rootNode = new Schema.BTreeNode();
@@ -142,10 +146,77 @@ export default class BTree<K = any, V = any>
     root.setSize(this._size);
     root.setMaxnodesize(this._maxNodeSize);
 
-    console.log(root.toObject());
+    console.log("root.toObject()", root.toObject());
     const serializedBytes = root.serializeBinary();
 
-    fs.writeFileSync("nodesBtreeNodes", serializedBytes);
+    fs.writeFileSync(filePath, serializedBytes);
+  }
+
+  loadNodesFromFile(filePath: string) {
+    console.log("object");
+    const bytes = fs.readFileSync(filePath);
+
+    const btree = Schema.BNodesTree.deserializeBinary(bytes);
+    console.log("object2");
+
+    this._maxNodeSize = btree.getMaxnodesize();
+    this._size = btree.getSize();
+    const root = btree.getRoot();
+
+    if (root) {
+      this._root = this.createTreeNodes(root) as BNode<K, V>;
+    }
+  }
+
+  createTreeNodes(
+    nodeParent: Schema.BTreeNode
+  ): BNode<unknown, unknown> | BNode<K, V> {
+    // leaf
+    if (
+      nodeParent?.getValuesList().length &&
+      !nodeParent.getChildrenList().length
+    ) {
+      const newRoot = new BNode(
+        nodeParent.getKeysList(),
+        nodeParent?.getValuesList().map((node) => this.createNewNode(node))
+      ) as BNode<unknown, unknown>;
+
+      return newRoot;
+    } else {
+      return new BNodeInternal(
+        nodeParent
+          ?.getChildrenList()
+          .map((sn) => this.createTreeNodes(sn)) as BNode<unknown, unknown>[],
+        nodeParent.getKeysList()
+      ) as unknown as BNodeInternal<K, V>;
+    }
+  }
+
+  createNewNode(node: Schema.Node) {
+    let tags = {};
+
+    (node.getTagsMap() as Map<string, string>).forEach((value, key) => {
+      tags = { ...tags, [key]: value };
+    });
+
+    return new Node({
+      id: node.getId(),
+      lat: node.getLat(),
+      lon: node.getLon(),
+      tags,
+      partOfWays: node
+        .getPartofwaysList()
+        .map((val) => new Way({ id: val, nodeRefs: [], tags: {} })),
+      distance: node.getDistanceList(),
+      pointsTo: node.getPointstoList().map(
+        (id) =>
+          new Node({
+            id,
+            lat: 0,
+            lon: 0,
+          })
+      ),
+    });
   }
 
   getRoot() {

@@ -124,9 +124,6 @@ export class AStar {
         const neighborDistance = current.node.distance[i];
 
         if (!closedSet.includes(neighbor.node)) {
-          if (neighbor.node.id === "1572470677") {
-            console.log(neighbor);
-          }
           let tempG = current.gScore + neighborDistance;
           // f(n) = g(n) + f(n)
           // g(n) is the cost of the path from the start node to n,
@@ -134,9 +131,8 @@ export class AStar {
 
           let newPath = false;
 
-          if (openedSet.map((sn) => sn.node.id).includes(neighbor.node.id)) {
+          if (newSearchNode) {
             if (tempG < neighbor.gScore) {
-              console.log("Evo ga");
               neighbor.gScore = tempG;
               newPath = true;
             }

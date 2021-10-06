@@ -44,14 +44,13 @@ export class BNode<K, V> {
     this.keys.forEach((key) => leafNode.addKeys(String(key)));
 
     (this.values as unknown as Node[]).forEach((node: Node) => {
+      if (node.id === "1134162801") {
+        console.log("1134162801", node);
+      }
       const protoNode = new Schema.Node();
       protoNode.setId(node.id);
       protoNode.setLat(node.lat);
       protoNode.setLon(node.lon);
-      protoNode.setMaxx(node.maxX);
-      protoNode.setMaxy(node.maxY);
-      protoNode.setMinx(node.minX);
-      protoNode.setMiny(node.minY);
 
       node.distance.forEach((d, index) => {
         protoNode.addDistance(d);
