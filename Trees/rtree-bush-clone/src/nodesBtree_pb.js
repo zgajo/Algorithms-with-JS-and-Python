@@ -1195,7 +1195,7 @@ proto.BTreeNode.prototype.clearChildrenList = function() {
  * @private {!Array<number>}
  * @const
  */
-proto.Node.repeatedFields_ = [8,9,10];
+proto.Node.repeatedFields_ = [4,5,6];
 
 
 
@@ -1231,13 +1231,9 @@ proto.Node.toObject = function(includeInstance, msg) {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     lat: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
     lon: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
-    maxx: jspb.Message.getFloatingPointFieldWithDefault(msg, 4, 0.0),
-    maxy: jspb.Message.getFloatingPointFieldWithDefault(msg, 5, 0.0),
-    minx: jspb.Message.getFloatingPointFieldWithDefault(msg, 6, 0.0),
-    miny: jspb.Message.getFloatingPointFieldWithDefault(msg, 7, 0.0),
-    partofwaysList: (f = jspb.Message.getRepeatedField(msg, 8)) == null ? undefined : f,
-    pointstoList: (f = jspb.Message.getRepeatedField(msg, 9)) == null ? undefined : f,
-    distanceList: (f = jspb.Message.getRepeatedFloatingPointField(msg, 10)) == null ? undefined : f,
+    partofwaysList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
+    pointstoList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f,
+    distanceList: (f = jspb.Message.getRepeatedFloatingPointField(msg, 6)) == null ? undefined : f,
     tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
@@ -1280,44 +1276,28 @@ proto.Node.deserializeBinaryFromReader = function(msg, reader) {
       msg.setId(value);
       break;
     case 2:
-      var value = /** @type {number} */ (reader.readFloat());
+      var value = /** @type {number} */ (reader.readDouble());
       msg.setLat(value);
       break;
     case 3:
-      var value = /** @type {number} */ (reader.readFloat());
+      var value = /** @type {number} */ (reader.readDouble());
       msg.setLon(value);
       break;
     case 4:
-      var value = /** @type {number} */ (reader.readFloat());
-      msg.setMaxx(value);
-      break;
-    case 5:
-      var value = /** @type {number} */ (reader.readFloat());
-      msg.setMaxy(value);
-      break;
-    case 6:
-      var value = /** @type {number} */ (reader.readFloat());
-      msg.setMinx(value);
-      break;
-    case 7:
-      var value = /** @type {number} */ (reader.readFloat());
-      msg.setMiny(value);
-      break;
-    case 8:
       var value = /** @type {string} */ (reader.readString());
       msg.addPartofways(value);
       break;
-    case 9:
+    case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.addPointsto(value);
       break;
-    case 10:
-      var values = /** @type {!Array<number>} */ (reader.isDelimited() ? reader.readPackedFloat() : [reader.readFloat()]);
+    case 6:
+      var values = /** @type {!Array<number>} */ (reader.isDelimited() ? reader.readPackedDouble() : [reader.readDouble()]);
       for (var i = 0; i < values.length; i++) {
         msg.addDistance(values[i]);
       }
       break;
-    case 11:
+    case 7:
       var value = msg.getTagsMap();
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
@@ -1361,70 +1341,42 @@ proto.Node.serializeBinaryToWriter = function(message, writer) {
   }
   f = message.getLat();
   if (f !== 0.0) {
-    writer.writeFloat(
+    writer.writeDouble(
       2,
       f
     );
   }
   f = message.getLon();
   if (f !== 0.0) {
-    writer.writeFloat(
+    writer.writeDouble(
       3,
-      f
-    );
-  }
-  f = message.getMaxx();
-  if (f !== 0.0) {
-    writer.writeFloat(
-      4,
-      f
-    );
-  }
-  f = message.getMaxy();
-  if (f !== 0.0) {
-    writer.writeFloat(
-      5,
-      f
-    );
-  }
-  f = message.getMinx();
-  if (f !== 0.0) {
-    writer.writeFloat(
-      6,
-      f
-    );
-  }
-  f = message.getMiny();
-  if (f !== 0.0) {
-    writer.writeFloat(
-      7,
       f
     );
   }
   f = message.getPartofwaysList();
   if (f.length > 0) {
     writer.writeRepeatedString(
-      8,
+      4,
       f
     );
   }
   f = message.getPointstoList();
   if (f.length > 0) {
     writer.writeRepeatedString(
-      9,
+      5,
       f
     );
   }
   f = message.getDistanceList();
   if (f.length > 0) {
-    writer.writePackedFloat(
-      10,
+    writer.writePackedDouble(
+      6,
       f
     );
   }
   f = message.getTagsMap(true);
   if (f && f.getLength() > 0) {
-    f.serializeBinary(11, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+    f.serializeBinary(7, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
 
@@ -1448,7 +1400,7 @@ proto.Node.prototype.setId = function(value) {
 
 
 /**
- * optional float lat = 2;
+ * optional double lat = 2;
  * @return {number}
  */
 proto.Node.prototype.getLat = function() {
@@ -1466,7 +1418,7 @@ proto.Node.prototype.setLat = function(value) {
 
 
 /**
- * optional float lon = 3;
+ * optional double lon = 3;
  * @return {number}
  */
 proto.Node.prototype.getLon = function() {
@@ -1484,83 +1436,11 @@ proto.Node.prototype.setLon = function(value) {
 
 
 /**
- * optional float maxX = 4;
- * @return {number}
- */
-proto.Node.prototype.getMaxx = function() {
-  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 4, 0.0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.Node} returns this
- */
-proto.Node.prototype.setMaxx = function(value) {
-  return jspb.Message.setProto3FloatField(this, 4, value);
-};
-
-
-/**
- * optional float maxY = 5;
- * @return {number}
- */
-proto.Node.prototype.getMaxy = function() {
-  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 5, 0.0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.Node} returns this
- */
-proto.Node.prototype.setMaxy = function(value) {
-  return jspb.Message.setProto3FloatField(this, 5, value);
-};
-
-
-/**
- * optional float minX = 6;
- * @return {number}
- */
-proto.Node.prototype.getMinx = function() {
-  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 6, 0.0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.Node} returns this
- */
-proto.Node.prototype.setMinx = function(value) {
-  return jspb.Message.setProto3FloatField(this, 6, value);
-};
-
-
-/**
- * optional float minY = 7;
- * @return {number}
- */
-proto.Node.prototype.getMiny = function() {
-  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 7, 0.0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.Node} returns this
- */
-proto.Node.prototype.setMiny = function(value) {
-  return jspb.Message.setProto3FloatField(this, 7, value);
-};
-
-
-/**
- * repeated string partOfWays = 8;
+ * repeated string partOfWays = 4;
  * @return {!Array<string>}
  */
 proto.Node.prototype.getPartofwaysList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 8));
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
 };
 
 
@@ -1569,7 +1449,7 @@ proto.Node.prototype.getPartofwaysList = function() {
  * @return {!proto.Node} returns this
  */
 proto.Node.prototype.setPartofwaysList = function(value) {
-  return jspb.Message.setField(this, 8, value || []);
+  return jspb.Message.setField(this, 4, value || []);
 };
 
 
@@ -1579,7 +1459,7 @@ proto.Node.prototype.setPartofwaysList = function(value) {
  * @return {!proto.Node} returns this
  */
 proto.Node.prototype.addPartofways = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 8, value, opt_index);
+  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
 };
 
 
@@ -1593,11 +1473,11 @@ proto.Node.prototype.clearPartofwaysList = function() {
 
 
 /**
- * repeated string pointsTo = 9;
+ * repeated string pointsTo = 5;
  * @return {!Array<string>}
  */
 proto.Node.prototype.getPointstoList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 9));
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 5));
 };
 
 
@@ -1606,7 +1486,7 @@ proto.Node.prototype.getPointstoList = function() {
  * @return {!proto.Node} returns this
  */
 proto.Node.prototype.setPointstoList = function(value) {
-  return jspb.Message.setField(this, 9, value || []);
+  return jspb.Message.setField(this, 5, value || []);
 };
 
 
@@ -1616,7 +1496,7 @@ proto.Node.prototype.setPointstoList = function(value) {
  * @return {!proto.Node} returns this
  */
 proto.Node.prototype.addPointsto = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 9, value, opt_index);
+  return jspb.Message.addToRepeatedField(this, 5, value, opt_index);
 };
 
 
@@ -1630,11 +1510,11 @@ proto.Node.prototype.clearPointstoList = function() {
 
 
 /**
- * repeated float distance = 10;
+ * repeated double distance = 6;
  * @return {!Array<number>}
  */
 proto.Node.prototype.getDistanceList = function() {
-  return /** @type {!Array<number>} */ (jspb.Message.getRepeatedFloatingPointField(this, 10));
+  return /** @type {!Array<number>} */ (jspb.Message.getRepeatedFloatingPointField(this, 6));
 };
 
 
@@ -1643,7 +1523,7 @@ proto.Node.prototype.getDistanceList = function() {
  * @return {!proto.Node} returns this
  */
 proto.Node.prototype.setDistanceList = function(value) {
-  return jspb.Message.setField(this, 10, value || []);
+  return jspb.Message.setField(this, 6, value || []);
 };
 
 
@@ -1653,7 +1533,7 @@ proto.Node.prototype.setDistanceList = function(value) {
  * @return {!proto.Node} returns this
  */
 proto.Node.prototype.addDistance = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 10, value, opt_index);
+  return jspb.Message.addToRepeatedField(this, 6, value, opt_index);
 };
 
 
@@ -1667,14 +1547,14 @@ proto.Node.prototype.clearDistanceList = function() {
 
 
 /**
- * map<string, string> tags = 11;
+ * map<string, string> tags = 7;
  * @param {boolean=} opt_noLazyCreate Do not create the map if
  * empty, instead returning `undefined`
  * @return {!jspb.Map<string,string>}
  */
 proto.Node.prototype.getTagsMap = function(opt_noLazyCreate) {
   return /** @type {!jspb.Map<string,string>} */ (
-      jspb.Message.getMapField(this, 11, opt_noLazyCreate,
+      jspb.Message.getMapField(this, 7, opt_noLazyCreate,
       null));
 };
 

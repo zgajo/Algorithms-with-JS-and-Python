@@ -153,18 +153,6 @@ export class Node extends jspb.Message {
   getLon(): number;
   setLon(value: number): void;
 
-  getMaxx(): number;
-  setMaxx(value: number): void;
-
-  getMaxy(): number;
-  setMaxy(value: number): void;
-
-  getMinx(): number;
-  setMinx(value: number): void;
-
-  getMiny(): number;
-  setMiny(value: number): void;
-
   clearPartofwaysList(): void;
   getPartofwaysList(): Array<string>;
   setPartofwaysList(value: Array<string>): void;
@@ -197,10 +185,6 @@ export namespace Node {
     id: string,
     lat: number,
     lon: number,
-    maxx: number,
-    maxy: number,
-    minx: number,
-    miny: number,
     partofwaysList: Array<string>,
     pointstoList: Array<string>,
     distanceList: Array<number>,

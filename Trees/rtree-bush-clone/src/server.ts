@@ -55,7 +55,7 @@ app.get("/", (req: Request, res: Response) => {
 
   // const startNode = nodes["2682013028"];
   // const endNode = nodes["748833076"];
-
+  console.time("astar");
   const aStar = new AStar().search(
     // bTreeWayNode.get("1934144326") as Node,
     bTreeWayNode.get(startNode.id) as Node,
@@ -67,6 +67,7 @@ app.get("/", (req: Request, res: Response) => {
     // bTreeWayNode.get("1454283110") as Node,
     // bTreeWayNode.get("748833076") as Node
   );
+  console.timeEnd("astar");
 
   res.render("index", {
     title: "Welcome to Login system",

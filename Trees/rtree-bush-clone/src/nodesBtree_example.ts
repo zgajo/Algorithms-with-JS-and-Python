@@ -6,6 +6,8 @@ import { Node } from "./graph/Node";
 import { Way } from "./graph/Way";
 import { connectNodesInWay } from "./utils/helper";
 
+const bTreeLoad = new BTree();
+const bTreeTest = new BTree();
 const bTreeNode = new BTree();
 export const bTreeWay: BTree<string, Way> = new BTree();
 export const bTreeWayNode: BTree<string, Node> = new BTree();
@@ -39,13 +41,43 @@ const main = () => {
       // ovo je kad se treba brisati
       return false;
     });
-
-    // Connect nodes in way
-    // connectNodesInWay(way);
   });
 
-  bTreeWay.storeWaysToFile();
-  bTreeWayNode.storeNodesToFile();
+  bTreeWayNode.storeNodesToFile(path.join(__dirname, "nodesBtreeNodes"));
+
+  bTreeLoad.loadNodesFromFile(path.join(__dirname, "nodesBtreeNodes"));
+  console.log("object");
+  // bTreeWay.valuesArray().forEach((way) => {
+  //   let nodesDistance = 0;
+  //   let startCalculationNode: Node = way.nodes[0];
+  //   // Remove nodes from way
+  //   way.nodes = way.nodes.filter((node, index) => {
+  //     if (index === 0) {
+  //       return true;
+  //     }
+  //     // zadnji node
+  //     if (index === way.nodes.length - 1) {
+  //       nodesDistance += haversine(way.nodes[index - 1], node);
+  //       connectNodesInWay(way, startCalculationNode, node, nodesDistance);
+  //       // ovo je kad se ne brise
+  //       return true;
+  //     }
+  //     // ovo je kad se ne brise
+  //     if (node.linkCount > 1) {
+  //       nodesDistance += haversine(way.nodes[index - 1], node);
+  //       connectNodesInWay(way, startCalculationNode, node, nodesDistance);
+  //       startCalculationNode = node;
+  //       nodesDistance = 0;
+  //       return true;
+  //     }
+  //     nodesDistance += haversine(way.nodes[index - 1], way.nodes[index]);
+  //     // ovo je kad se treba brisati
+  //     return false;
+  //   });
+  //   // Connect nodes in way
+  //   // connectNodesInWay(way);
+  // });
+  // bTreeWay.storeWaysToFile();
 };
 
 parse({
@@ -56,6 +88,7 @@ parse({
   },
   bounds: function (bounds: any) {},
   node: function (node: any) {
+    bTreeTest.set("test", {});
     bTreeNode.set(node.id, node);
   },
   way: function (way: Way) {
