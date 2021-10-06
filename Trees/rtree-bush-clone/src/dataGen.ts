@@ -1,11 +1,11 @@
 // import RBush from "rbush";
 import { parse } from "osm-read";
 import * as path from "path";
-import { RTree } from "./RTree";
+import { RTree } from "./graph/RTree/RTree";
 
 import BTree from "./Btree";
-import { Way } from "./graph/Way";
-import { Node } from "./graph/Node";
+import { Way } from "./graph/RTree/Way";
+import { Node } from "./graph/RTree/Node";
 import { AStar, haversine } from "./aStar";
 import { connectNodesInWay } from "./utils/helper";
 

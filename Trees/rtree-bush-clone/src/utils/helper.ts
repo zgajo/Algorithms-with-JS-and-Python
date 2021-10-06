@@ -1,6 +1,5 @@
-import { haversine } from "../aStar";
-import { Node } from "../graph/Node";
-import { Way } from "../graph/Way";
+import { Node } from "../graph/RTree/Node";
+import { Way } from "../graph/RTree/Way";
 
 function degreesToRadians(degrees: number) {
   return (degrees * Math.PI) / 180;

@@ -2,8 +2,8 @@ import { EditRangeResult } from "sorted-btree";
 import { check, index, undefVals } from ".";
 import BTree from "./Btree";
 import * as Schema from "../nodesBtree_pb";
-import { Way } from "../graph/Way";
-import { Node } from "../graph/Node";
+import { Way } from "../graph/RTree/Way";
+import { Node } from "../graph/RTree/Node";
 
 /** Leaf node / base class. **************************************************/
 export class BNode<K, V> {

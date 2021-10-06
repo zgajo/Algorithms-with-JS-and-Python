@@ -18,8 +18,8 @@ import {
 import { BNode } from "./BtreeNode";
 import { BNodeInternal } from "./BtreeNodeInternal";
 import { ISortedMap, ISortedMapF } from "./interfaces";
-import { Node } from "../graph/Node";
-import { Way } from "../graph/Way";
+import { Node } from "../graph/RTree/Node";
+import { Way } from "../graph/RTree/Way";
 /**
  * A reasonably fast collection of key-value pairs with a powerful API.
  * Largely compatible with the standard Map. BTree is a B+ tree data structure,
