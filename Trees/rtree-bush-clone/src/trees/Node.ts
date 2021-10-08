@@ -6,7 +6,7 @@ export class Node extends BBox {
   id: string;
   lon: number;
   lat: number;
-  pointsTo: Node[];
+  pointsTo: Node[] | string[];
   distance: number[];
   tags: { [key: string]: any } | undefined;
   partOfWays: Way[];
@@ -19,7 +19,7 @@ export class Node extends BBox {
     tags?: { [key: string]: any };
     partOfWays?: Way[];
     linkCount?: number;
-    pointsTo?: Node[];
+    pointsTo?: Node[] | string[];
     distance?: number[];
   }) {
     super(node.lat, node.lon, node.lat, node.lon);
@@ -40,7 +40,7 @@ export class Node extends BBox {
   }
 
   connectToNode(node: Node) {
-    this.pointsTo.push(node);
+    (this.pointsTo as Node[]).push(node);
     this.distance.push(distanceInKmBetweenEarthCoordinates(this, node));
   }
 

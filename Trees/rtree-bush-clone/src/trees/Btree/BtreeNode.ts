@@ -54,7 +54,9 @@ export class BNode<K, V> {
 
       node.distance.forEach((d, index) => {
         protoNode.addDistance(d);
-        protoNode.addPointsto(node.pointsTo[index].id);
+        protoNode.addPointsto(
+          (node.pointsTo[index] as Node).id || (node.pointsTo[index] as string)
+        );
       });
 
       node.partOfWays.forEach((w, index) => {
@@ -186,6 +188,7 @@ export class BNode<K, V> {
 
   get(key: K, defaultValue: V | undefined, tree: BTree<K, V>): V | undefined {
     var i = this.indexOf(key, -1, tree._compare);
+    console.log("BtreeNode", i);
     return i < 0 ? defaultValue : this.values[i];
   }
 

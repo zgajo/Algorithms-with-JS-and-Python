@@ -83,8 +83,12 @@ export class BNodeInternal<K, V> extends BNode<K, V> {
   }
 
   get(key: K, defaultValue: V | undefined, tree: BTree<K, V>): V | undefined {
+    console.log("BtreeNodeInternal this", this.keys, key);
     var i = this.indexOf(key, 0, tree._compare),
       children = this.children;
+
+    console.log("BtreeNodeInternal", i);
+
     return i < children.length
       ? children[i].get(key, defaultValue, tree)
       : undefined;

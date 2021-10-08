@@ -32,15 +32,15 @@ export const connectNodesInWay = (
   // oneway=yes
   // oneway=-1 suprotni smjer
   if (way.tags.oneway == "-1") {
-    endNode.pointsTo.push(startCalculationNode);
+    (endNode.pointsTo as Node[]).push(startCalculationNode);
     endNode.distance.push(nodesDistance);
   } else if (way.tags.oneway === "yes" || way.tags.junction === "roundabout") {
-    startCalculationNode.pointsTo.push(endNode);
+    (startCalculationNode.pointsTo as Node[]).push(endNode);
     startCalculationNode.distance.push(nodesDistance);
   } else {
-    startCalculationNode.pointsTo.push(endNode);
+    (startCalculationNode.pointsTo as Node[]).push(endNode);
     startCalculationNode.distance.push(nodesDistance);
-    endNode.pointsTo.push(startCalculationNode);
+    (endNode.pointsTo as Node[]).push(startCalculationNode);
     endNode.distance.push(nodesDistance);
   }
 };

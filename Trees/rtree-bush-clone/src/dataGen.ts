@@ -97,7 +97,7 @@ If you are only working on a small data set you can of course simply read everyt
 console.time("test");
 console.log("start parse");
 parse({
-  filePath: path.join(__dirname, "andorra-latest.osm.pbf"),
+  filePath: path.join(__dirname, "croatia-latest.osm.pbf"),
   endDocument: function () {
     // console.log(rtree);
     console.timeEnd("test");

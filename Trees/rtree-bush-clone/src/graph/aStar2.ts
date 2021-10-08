@@ -1,3 +1,6 @@
+import * as path from "path";
+import BTree from "../trees/Btree";
+
 import { Node } from "../trees/Node";
 
 export function heuristic(a: Node, b: Node) {
@@ -67,16 +70,24 @@ function removeFromArray(arr: SearchNode[], el: Node) {
   return arr;
 }
 
-export class AStar {
-  constructor() {}
+export class AStar2 {
+  nodesBtree: BTree;
 
-  search(start: Node, end: Node) {
+  constructor(filePath: string) {
+    this.nodesBtree = new BTree();
+    this.nodesBtree.loadNodesFromFile(path.join(filePath));
+  }
+
+  search(start: string, e: string) {
     let openedSet: SearchNode[] = [];
     let closedSet: Node[] = [];
     let path = [];
+    let end = this.nodesBtree.get(e);
     let current;
 
-    const startNode = new SearchNode(start);
+    this.nodesBtree.get(start);
+
+    const startNode = new SearchNode(this.nodesBtree.get(start));
 
     openedSet.push(startNode);
 
@@ -116,11 +127,13 @@ export class AStar {
 
       // generate q's 8 successors and set their parents to q
       for (const i in current.node.pointsTo) {
-        const newNode = current.node.pointsTo[i];
-        const newSearchNode = openedSet.find((sn) => sn.node === newNode);
+        const newNode = this.nodesBtree.get(current.node.pointsTo[i] as string);
+        const newSearchNode = openedSet.find((sn) => sn.node.id === newNode.id);
 
         const neighbor =
-          newSearchNode || new SearchNode(current.node.pointsTo[i] as Node);
+          newSearchNode ||
+          new SearchNode(this.nodesBtree.get(current.node.pointsTo[i]));
+
         const neighborDistance = current.node.distance[i];
 
         if (!closedSet.includes(neighbor.node)) {
@@ -145,7 +158,6 @@ export class AStar {
           // update neighbourgh only if g is better than previous one
           if (newPath) {
             neighbor.previous = current;
-
             neighbor.hScore = haversine(neighbor.node, end);
             neighbor.fScore = neighbor.gScore + neighbor.hScore;
           }
@@ -172,8 +184,8 @@ export class AStar {
     let distance = 0;
     path.forEach((sn) => {
       if (sn?.previous) {
-        const indexOf = (sn.previous.node.pointsTo as Node[])
-          .map((node) => node.id)
+        const indexOf = sn.previous.node.pointsTo
+          .map((nodeID) => this.nodesBtree.get(nodeID).id)
           .indexOf(sn.node.id);
 
         distance += sn.previous.node.distance[indexOf];
@@ -182,13 +194,13 @@ export class AStar {
 
     console.log("distance", distance);
 
-    return {
-      route: path.map((sn) => [sn?.node.lat, sn?.node.lon]) as [number[]],
-      visitedNodes: closedSet.map((node) => ({
-        ...node,
-        pointsTo: (node.pointsTo as Node[]).map((p) => p.id),
-        partOfWays: node.partOfWays.map((w) => w.id),
-      })),
-    };
+    // return {
+    //   route: path.map((sn) => [sn?.node.lat, sn?.node.lon]) as [number[]],
+    //   visitedNodes: closedSet.map((node) => ({
+    //     ...node,
+    //     pointsTo: node.pointsTo.map((p) => this.nodesBtree.get(p).id),
+    //     partOfWays: node.partOfWays.map((w) => w.id),
+    //   })),
+    // };
   }
 }

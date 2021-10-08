@@ -153,18 +153,25 @@ export default class BTree<K = any, V = any>
   }
 
   loadNodesFromFile(filePath: string) {
-    console.log("object");
+    console.log("loadNodesFromFile");
+    console.time("readFileSync");
     const bytes = fs.readFileSync(filePath);
+    console.timeEnd("readFileSync");
 
+    console.time("deserializeBinary");
     const btree = Schema.BNodesTree.deserializeBinary(bytes);
-    console.log("object2");
+    console.timeEnd("deserializeBinary");
 
     this._maxNodeSize = btree.getMaxnodesize();
     this._size = btree.getSize();
+    console.time("getRoot");
     const root = btree.getRoot();
+    console.timeEnd("getRoot");
 
     if (root) {
+      console.time("this.createTreeNodes");
       this._root = this.createTreeNodes(root) as BNode<K, V>;
+      console.timeEnd("this.createTreeNodes");
     }
   }
 
@@ -208,14 +215,7 @@ export default class BTree<K = any, V = any>
         .getPartofwaysList()
         .map((val) => new Way({ id: val, nodeRefs: [], tags: {} })),
       distance: node.getDistanceList(),
-      pointsTo: node.getPointstoList().map(
-        (id) =>
-          new Node({
-            id,
-            lat: 0,
-            lon: 0,
-          })
-      ),
+      pointsTo: node.getPointstoList(),
     });
   }
 
