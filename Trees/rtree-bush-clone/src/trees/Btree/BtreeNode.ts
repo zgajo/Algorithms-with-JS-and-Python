@@ -4,6 +4,9 @@ import BTree from "./Btree";
 import * as Schema from "../../proto/nodesBtree_pb";
 import { Way } from "../Way";
 import { Node } from "../Node";
+import { BTreeNode } from "../../flatbuffers/map/node/b-tree-node";
+import { Builder } from "flatbuffers";
+import { BTreeLeafNode } from "../../flatbuffers/map/node/b-tree-leaf-node";
 
 /** Leaf node / base class. **************************************************/
 export class BNode<K, V> {
@@ -40,39 +43,63 @@ export class BNode<K, V> {
     });
   }
 
-  storeNodeToLeaf(leafNode: Schema.BTreeNode) {
-    this.keys.forEach((key) => leafNode.addKeys(String(key)));
-
-    (this.values as unknown as Node[]).forEach((node: Node) => {
-      if (node.id === "1134162801") {
-        console.log("1134162801", node);
-      }
-      const protoNode = new Schema.Node();
-      protoNode.setId(node.id);
-      protoNode.setLat(node.lat);
-      protoNode.setLon(node.lon);
-
-      node.distance.forEach((d, index) => {
-        protoNode.addDistance(d);
-        protoNode.addPointsto(
-          (node.pointsTo[index] as Node).id || (node.pointsTo[index] as string)
-        );
+  storeNodeToLeaf(builder: Builder) {
+    const vals = (this.values as unknown as Node[]).map((node: Node) => {
+      const id = builder.createString(node.id);
+      const distance = BTreeLeafNode.createDistanceVector(
+        builder,
+        node.distance
+      );
+      const pointsToNums = node.pointsTo.map((node, index) => {
+        return builder.createString((node as Node).id || (node as string));
       });
 
-      node.partOfWays.forEach((w, index) => {
-        protoNode.addPartofways(w.id);
+      const pointsTo = BTreeLeafNode.createPointsToVector(
+        builder,
+        pointsToNums
+      );
+
+      const partOfWayNums = node.partOfWays.map((w, index) => {
+        return builder.createString(w.id);
       });
 
-      for (const [key, value] of Object.entries(node.tags || {})) {
-        protoNode.getTagsMap().set(key, value);
-      }
+      const partOfWays = BTreeLeafNode.createPartOfWaysVector(
+        builder,
+        partOfWayNums
+      );
 
-      leafNode.addValues(protoNode);
+      BTreeLeafNode.startBTreeLeafNode(builder);
+      BTreeLeafNode.addId(builder, id);
+      BTreeLeafNode.addLat(builder, node.lat);
+      BTreeLeafNode.addLon(builder, node.lon);
+      BTreeLeafNode.addDistance(builder, distance);
+      BTreeLeafNode.addPointsTo(builder, pointsTo);
+      BTreeLeafNode.addPartOfWays(builder, partOfWays);
+      const protoNode = BTreeLeafNode.endBTreeLeafNode(builder);
+      // for (const [key, value] of Object.entries(node.tags || {})) {
+      //   protoNode.getTagsMap().set(key, value);
+      // }
+
+      return protoNode;
     });
+
+    const values = BTreeNode.createValuesVector(builder, vals);
+    const keysNums = this.keys.map((key) => builder.createString(String(key)));
+    const keys = BTreeNode.createKeysVector(builder, keysNums);
+
+    BTreeNode.startBTreeNode(builder);
+    BTreeNode.addKeys(builder, keys);
+    BTreeNode.addValues(builder, values);
+    const leaf = BTreeNode.endBTreeNode(builder);
+    builder.finish(leaf);
+
+    return leaf;
   }
 
   storeWayTo(internalNode: Schema.BTreeWayNode) {}
-  storeNodeTo(internalNode: Schema.BTreeNode) {}
+  storeNodeTo(builder: Builder) {
+    return 0;
+  }
 
   ///////////////////////////////////////////////////////////////////////////
   // Shared methods /////////////////////////////////////////////////////////
@@ -188,7 +215,6 @@ export class BNode<K, V> {
 
   get(key: K, defaultValue: V | undefined, tree: BTree<K, V>): V | undefined {
     var i = this.indexOf(key, -1, tree._compare);
-    console.log("BtreeNode", i);
     return i < 0 ? defaultValue : this.values[i];
   }
 
@@ -226,7 +252,6 @@ export class BNode<K, V> {
   }
 
   keyStartsWith(key: K) {
-    console.log(this);
     return this;
   }
 

@@ -1,4 +1,6 @@
 import { defaultComparator, EditRangeResult } from "sorted-btree";
+import { Builder, ByteBuffer } from "flatbuffers";
+
 import * as fs from "fs";
 import * as path from "path";
 
@@ -20,6 +22,8 @@ import { BNodeInternal } from "./BtreeNodeInternal";
 import { ISortedMap, ISortedMapF } from "./interfaces";
 import { Node } from "../Node";
 import { Way } from "../Way";
+import { BNodesTree } from "../../flatbuffers/map/node/b-nodes-tree";
+import { BTreeNode } from "../../flatbuffers/map/node/b-tree-node";
 /**
  * A reasonably fast collection of key-value pairs with a powerful API.
  * Largely compatible with the standard Map. BTree is a B+ tree data structure,
@@ -136,20 +140,26 @@ export default class BTree<K = any, V = any>
 
   storeNodesToFile(filePath: string) {
     console.log("rootNode");
-    const root = new Schema.BNodesTree();
-    const rootNode = new Schema.BTreeNode();
+    var builder = new Builder(1024);
 
-    this._root.storeNodeTo(rootNode);
+    // root
+    // rootNode
+
+    const rootNode = this._root.storeNodeTo(builder);
+
+    BNodesTree.startBNodesTree(builder);
 
     // store root to protobuf
-    root.setRoot(rootNode);
-    root.setSize(this._size);
-    root.setMaxnodesize(this._maxNodeSize);
+    BNodesTree.addRoot(builder, rootNode);
+    BNodesTree.addSize(builder, this._size);
+    BNodesTree.addMaxNodeSize(builder, this._maxNodeSize);
 
-    console.log("root.toObject()", root.toObject());
-    const serializedBytes = root.serializeBinary();
+    const root = BNodesTree.endBNodesTree(builder);
+    builder.finish(root);
 
-    fs.writeFileSync(filePath, serializedBytes);
+    const serializedBytes = builder.asUint8Array();
+
+    fs.writeFileSync(filePath, serializedBytes, "binary");
   }
 
   loadNodesFromFile(filePath: string) {

@@ -2,6 +2,8 @@ import { check, EditRangeResult, index } from ".";
 import BTree from "./Btree";
 import { BNode } from "./BtreeNode";
 import * as Schema from "../../proto/nodesBtree_pb";
+import { BTreeNode } from "../../flatbuffers/map/node/b-tree-node";
+import { Builder } from "flatbuffers";
 
 /** Internal node (non-leaf node) ********************************************/
 export class BNodeInternal<K, V> extends BNode<K, V> {
@@ -36,21 +38,28 @@ export class BNodeInternal<K, V> extends BNode<K, V> {
     this.keys.forEach((key) => internalNode.addKeys(String(key)));
   }
 
-  storeNodeTo(internalNode: Schema.BTreeNode) {
-    this.children.forEach((node) => {
-      const protoNode = new Schema.BTreeNode();
-
+  storeNodeTo(builder: Builder) {
+    const childs = this.children.map((node) => {
       // leaf node
       if (node.isLeaf) {
-        node.storeNodeToLeaf(protoNode);
+        return node.storeNodeToLeaf(builder);
       } else {
-        node.storeNodeTo(protoNode);
+        return node.storeNodeTo(builder);
       }
-
-      internalNode.addChildren(protoNode);
     });
+    const children = BTreeNode.createChildrenVector(builder, childs);
+    const keyNums = this.keys.map((key) => builder.createString(String(key)));
+    const keys = BTreeNode.createKeysVector(builder, keyNums);
 
-    this.keys.forEach((key) => internalNode.addKeys(String(key)));
+    BTreeNode.startBTreeNode(builder);
+    BTreeNode.addChildren(builder, children);
+    BTreeNode.addKeys(builder, keys);
+
+    const internalN = BTreeNode.endBTreeNode(builder);
+
+    builder.finish(internalN);
+
+    return internalN;
   }
 
   clone(): BNode<K, V> {
@@ -83,11 +92,8 @@ export class BNodeInternal<K, V> extends BNode<K, V> {
   }
 
   get(key: K, defaultValue: V | undefined, tree: BTree<K, V>): V | undefined {
-    console.log("BtreeNodeInternal this", this.keys, key);
     var i = this.indexOf(key, 0, tree._compare),
       children = this.children;
-
-    console.log("BtreeNodeInternal", i);
 
     return i < children.length
       ? children[i].get(key, defaultValue, tree)

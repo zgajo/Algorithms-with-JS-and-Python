@@ -1,0 +1,26 @@
+namespace Map.Node;
+
+table BTreeLeafNode {
+  id: string;
+  lat: double;
+  lon: double;
+  part_of_ways: [string];
+  points_to: [string];
+  distance: [double];
+}
+
+table BTreeNode {
+  keys: [string];
+  values: [BTreeLeafNode];  
+  is_shared: bool = false;
+  children: [BTreeNode];
+}
+
+/** BTree of Nodes **/
+table BNodesTree {
+  size: short;
+  max_node_size: short;
+  root: BTreeNode;
+}
+
+root_type BNodesTree;
