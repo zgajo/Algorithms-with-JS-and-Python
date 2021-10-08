@@ -12,26 +12,26 @@ __init(i:number, bb:flatbuffers.ByteBuffer):Vec3 {
 }
 
 x():number {
-  return this.bb!.readFloat32(this.bb_pos);
+  return this.bb!.readFloat64(this.bb_pos);
 }
 
 y():number {
-  return this.bb!.readFloat32(this.bb_pos + 4);
+  return this.bb!.readFloat64(this.bb_pos + 8);
 }
 
 z():number {
-  return this.bb!.readFloat32(this.bb_pos + 8);
+  return this.bb!.readFloat64(this.bb_pos + 16);
 }
 
 static sizeOf():number {
-  return 12;
+  return 24;
 }
 
 static createVec3(builder:flatbuffers.Builder, x: number, y: number, z: number):flatbuffers.Offset {
-  builder.prep(4, 12);
-  builder.writeFloat32(z);
-  builder.writeFloat32(y);
-  builder.writeFloat32(x);
+  builder.prep(8, 24);
+  builder.writeFloat64(z);
+  builder.writeFloat64(y);
+  builder.writeFloat64(x);
   return builder.offset();
 }
 

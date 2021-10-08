@@ -1,4 +1,4 @@
-import { Builder } from "flatbuffers";
+import { Builder, ByteBuffer } from "flatbuffers";
 import * as fs from "fs";
 import { Color } from "./flatbuffers/my-game/sample/color";
 import { Equipment } from "./flatbuffers/my-game/sample/equipment";
@@ -44,7 +44,7 @@ var path = builder.endVector();
 
 // Create our monster by using `startMonster()` and `endMonster()`.
 Monster.startMonster(builder);
-Monster.addPos(builder, Vec3.createVec3(builder, 1.0, 2.0, 3.0));
+Monster.addPos(builder, Vec3.createVec3(builder, 1.1, 2.0, 3.0));
 Monster.addHp(builder, 300);
 Monster.addColor(builder, Color.Red);
 Monster.addName(builder, name);
@@ -60,3 +60,36 @@ builder.finish(orc); // You could also call `MyGame.Sample.Monster.finishMonster
 // This must be called after `finish()`.
 var buf = builder.asUint8Array(); // Of type `Uint8Array`.
 fs.writeFileSync("monster.bin", buf, "binary");
+
+// the data you just read, as a `Uint8Array`
+// Note that the example here uses `readFileSync` from the built-in `fs` module,
+// but other methods for accessing the file contents will also work.
+var bytes = new Uint8Array(fs.readFileSync("./monster.bin"));
+
+var buf2 = new ByteBuffer(bytes);
+
+// Get an accessor to the root object inside the buffer.
+var monster = Monster.getRootAsMonster(buf2);
+var hp = monster.hp();
+var mana = monster.mana();
+var name2 = monster.name();
+var pos2 = monster.pos();
+var x = pos2?.x();
+var y = pos2?.y();
+var z = pos2?.z();
+
+var invLength = monster.inventoryLength();
+var thirdItem = monster.inventory(2);
+
+var weaponsLength = monster.weaponsLength();
+var secondWeaponName = monster.weapons(1)?.name();
+var secondWeaponDamage = monster.weapons(1)?.damage();
+
+var unionType = monster.equippedType();
+
+if (unionType == Equipment.Weapon) {
+  var weaponName = monster.equipped(new Weapon()).name(); // 'Axe'
+  var weaponDamage = monster.equipped(new Weapon()).damage(); // 5
+}
+
+console.log(monster);

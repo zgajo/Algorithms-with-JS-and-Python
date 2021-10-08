@@ -90,7 +90,7 @@ equipped<T extends flatbuffers.Table>(obj:any):any|null {
 
 path(index: number, obj?:Vec3):Vec3|null {
   const offset = this.bb!.__offset(this.bb_pos, 24);
-  return offset ? (obj || new Vec3()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 12, this.bb!) : null;
+  return offset ? (obj || new Vec3()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 24, this.bb!) : null;
 }
 
 pathLength():number {
@@ -167,7 +167,7 @@ static addPath(builder:flatbuffers.Builder, pathOffset:flatbuffers.Offset) {
 }
 
 static startPathVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(12, numElems, 4);
+  builder.startVector(24, numElems, 8);
 }
 
 static endMonster(builder:flatbuffers.Builder):flatbuffers.Offset {

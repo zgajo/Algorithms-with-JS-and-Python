@@ -7,9 +7,9 @@ enum Color:byte { Red = 0, Green, Blue = 2 }
 union Equipment { Weapon } // Optionally add more tables.
 
 struct Vec3 {
-  x:float;
-  y:float;
-  z:float;
+  x:double;
+  y:double;
+  z:double;
 }
 
 table Monster {
