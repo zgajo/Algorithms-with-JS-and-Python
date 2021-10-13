@@ -1,9 +1,10 @@
 import { parse } from "osm-read";
 import * as path from "path";
-import { haversine } from "./graph/aStar";
+import { haversine, AStar2 } from "./graph/aStar2";
 import BTree from "./trees/Btree";
 import { Node } from "./trees/Node";
 import { Way } from "./trees/Way";
+import { COUNTRY } from "./utils/constants";
 import { connectNodesInWay } from "./utils/helper";
 
 const bTreeLoad = new BTree();
@@ -43,10 +44,27 @@ const main = () => {
     });
   });
 
-  bTreeWayNode.storeNodesToFile(path.join(__dirname, "nodesBtreeNodes"));
+  bTreeWayNode.storeProtoNodesToFile(
+    path.join(__dirname, COUNTRY + "nodesBtreeNodes")
+  );
 
-  bTreeLoad.loadNodesFromFile(path.join(__dirname, "nodesBtreeNodes"));
+  // bTreeLoad.loadProtoNodesFromFile(
+  //   path.join(__dirname, COUNTRY + "nodesBtreeNodes")
+  // );
   console.log("object");
+  console.time("astar");
+  // const aStar = new AStar2().search(
+  //   // bTreeWayNode.get("1934144326") as Node,
+  //   "1934144326",
+  //   // bTreeWayNode.get("51390143") as Node,
+  //   "51390143"
+
+  //   // r.selo -> rovinj
+
+  //   // bTreeWayNode.get("1454283110") as Node,
+  //   // bTreeWayNode.get("748833076") as Node
+  // );
+  console.timeEnd("astar");
   // bTreeWay.valuesArray().forEach((way) => {
   //   let nodesDistance = 0;
   //   let startCalculationNode: Node = way.nodes[0];
@@ -81,7 +99,7 @@ const main = () => {
 };
 
 parse({
-  filePath: path.join(__dirname, "andorra-latest.osm.pbf"),
+  filePath: path.join(__dirname, COUNTRY + "-latest.osm.pbf"),
   endDocument: function () {
     console.log("document end");
     main();

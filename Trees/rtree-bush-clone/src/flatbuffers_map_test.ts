@@ -4,12 +4,11 @@ import * as path from "path";
 import { defaultComparator } from "sorted-btree";
 import { BNodesTree } from "./flatbuffers/map/node/b-nodes-tree";
 import { BTreeNode } from "./flatbuffers/map/node/b-tree-node";
-
-import { COUNTRY } from "./nodesBtree_example_3";
+import { COUNTRY } from "./utils/constants";
 
 const indexOf = (
   node: BTreeNode | null | undefined,
-  key: string,
+  key: number,
   failXor: number,
   leaf: boolean
 ): number => {
@@ -51,7 +50,7 @@ const getKey = (key: string, root: BTreeNode | null | undefined) => {
   while (!foundNode && node) {
     const index = indexOf(
       node,
-      key,
+      Number(key),
       0,
       (node?.childrenLength() as number) <= 0
     );

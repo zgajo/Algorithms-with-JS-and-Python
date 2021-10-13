@@ -38,7 +38,7 @@ export class BNodeInternal<K, V> extends BNode<K, V> {
     this.keys.forEach((key) => internalNode.addKeys(String(key)));
   }
 
-  storeNodeTo(builder: Builder) {
+  storeNodeTo(builder: Builder, rootNode?: boolean) {
     const childs = this.children.map((node) => {
       // leaf node
       if (node.isLeaf) {
@@ -47,8 +47,9 @@ export class BNodeInternal<K, V> extends BNode<K, V> {
         return node.storeNodeTo(builder);
       }
     });
+
     const children = BTreeNode.createChildrenVector(builder, childs);
-    const keyNums = this.keys.map((key) => builder.createString(String(key)));
+    const keyNums = this.keys.map((key) => Number(key));
     const keys = BTreeNode.createKeysVector(builder, keyNums);
 
     BTreeNode.startBTreeNode(builder);
@@ -60,6 +61,23 @@ export class BNodeInternal<K, V> extends BNode<K, V> {
     builder.finish(internalN);
 
     return internalN;
+  }
+
+  storeProtoNodeTo(internalNode: Schema.BTreeNode) {
+    this.children.forEach((node) => {
+      const protoNode = new Schema.BTreeNode();
+
+      // leaf node
+      if (node.isLeaf) {
+        node.storeProtoNodeToLeaf(protoNode);
+      } else {
+        node.storeProtoNodeTo(protoNode);
+      }
+
+      internalNode.addChildren(protoNode);
+    });
+
+    this.keys.forEach((key) => internalNode.addKeys(String(key)));
   }
 
   clone(): BNode<K, V> {

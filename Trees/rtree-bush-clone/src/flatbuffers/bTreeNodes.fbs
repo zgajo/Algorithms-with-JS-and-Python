@@ -1,16 +1,16 @@
 namespace Map.Node;
 
 table BTreeLeafNode {
-  id: string;
+  id: short;
   lat: double;
   lon: double;
-  part_of_ways: [string];
-  points_to: [string];
+  part_of_ways: [short];
+  points_to: [short];
   distance: [double];
 }
 
 table BTreeNode {
-  keys: [string];
+  keys: [short];
   values: [BTreeLeafNode];  
   is_shared: bool = false;
   children: [BTreeNode];

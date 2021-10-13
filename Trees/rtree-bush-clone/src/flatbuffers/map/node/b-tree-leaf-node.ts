@@ -20,11 +20,9 @@ static getSizePrefixedRootAsBTreeLeafNode(bb:flatbuffers.ByteBuffer, obj?:BTreeL
   return (obj || new BTreeLeafNode()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-id():string|null
-id(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
-id(optionalEncoding?:any):string|Uint8Array|null {
+id():number {
   const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+  return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
 }
 
 lat():number {
@@ -37,11 +35,9 @@ lon():number {
   return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
 }
 
-partOfWays(index: number):string
-partOfWays(index: number,optionalEncoding:flatbuffers.Encoding):string|Uint8Array
-partOfWays(index: number,optionalEncoding?:any):string|Uint8Array|null {
+partOfWays(index: number):number|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
-  return offset ? this.bb!.__string(this.bb!.__vector(this.bb_pos + offset) + index * 4, optionalEncoding) : null;
+  return offset ? this.bb!.readInt16(this.bb!.__vector(this.bb_pos + offset) + index * 2) : 0;
 }
 
 partOfWaysLength():number {
@@ -49,16 +45,24 @@ partOfWaysLength():number {
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
-pointsTo(index: number):string
-pointsTo(index: number,optionalEncoding:flatbuffers.Encoding):string|Uint8Array
-pointsTo(index: number,optionalEncoding?:any):string|Uint8Array|null {
+partOfWaysArray():Int16Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? new Int16Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+}
+
+pointsTo(index: number):number|null {
   const offset = this.bb!.__offset(this.bb_pos, 12);
-  return offset ? this.bb!.__string(this.bb!.__vector(this.bb_pos + offset) + index * 4, optionalEncoding) : null;
+  return offset ? this.bb!.readInt16(this.bb!.__vector(this.bb_pos + offset) + index * 2) : 0;
 }
 
 pointsToLength():number {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+}
+
+pointsToArray():Int16Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? new Int16Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
 
 distance(index: number):number|null {
@@ -80,8 +84,8 @@ static startBTreeLeafNode(builder:flatbuffers.Builder) {
   builder.startObject(6);
 }
 
-static addId(builder:flatbuffers.Builder, idOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(0, idOffset, 0);
+static addId(builder:flatbuffers.Builder, id:number) {
+  builder.addFieldInt16(0, id, 0);
 }
 
 static addLat(builder:flatbuffers.Builder, lat:number) {
@@ -96,32 +100,42 @@ static addPartOfWays(builder:flatbuffers.Builder, partOfWaysOffset:flatbuffers.O
   builder.addFieldOffset(3, partOfWaysOffset, 0);
 }
 
-static createPartOfWaysVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
+static createPartOfWaysVector(builder:flatbuffers.Builder, data:number[]|Int16Array):flatbuffers.Offset;
+/**
+ * @deprecated This Uint8Array overload will be removed in the future.
+ */
+static createPartOfWaysVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
+static createPartOfWaysVector(builder:flatbuffers.Builder, data:number[]|Int16Array|Uint8Array):flatbuffers.Offset {
+  builder.startVector(2, data.length, 2);
   for (let i = data.length - 1; i >= 0; i--) {
-    builder.addOffset(data[i]!);
+    builder.addInt16(data[i]!);
   }
   return builder.endVector();
 }
 
 static startPartOfWaysVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
+  builder.startVector(2, numElems, 2);
 }
 
 static addPointsTo(builder:flatbuffers.Builder, pointsToOffset:flatbuffers.Offset) {
   builder.addFieldOffset(4, pointsToOffset, 0);
 }
 
-static createPointsToVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
-  builder.startVector(4, data.length, 4);
+static createPointsToVector(builder:flatbuffers.Builder, data:number[]|Int16Array):flatbuffers.Offset;
+/**
+ * @deprecated This Uint8Array overload will be removed in the future.
+ */
+static createPointsToVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
+static createPointsToVector(builder:flatbuffers.Builder, data:number[]|Int16Array|Uint8Array):flatbuffers.Offset {
+  builder.startVector(2, data.length, 2);
   for (let i = data.length - 1; i >= 0; i--) {
-    builder.addOffset(data[i]!);
+    builder.addInt16(data[i]!);
   }
   return builder.endVector();
 }
 
 static startPointsToVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(4, numElems, 4);
+  builder.startVector(2, numElems, 2);
 }
 
 static addDistance(builder:flatbuffers.Builder, distanceOffset:flatbuffers.Offset) {
@@ -150,9 +164,9 @@ static endBTreeLeafNode(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createBTreeLeafNode(builder:flatbuffers.Builder, idOffset:flatbuffers.Offset, lat:number, lon:number, partOfWaysOffset:flatbuffers.Offset, pointsToOffset:flatbuffers.Offset, distanceOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createBTreeLeafNode(builder:flatbuffers.Builder, id:number, lat:number, lon:number, partOfWaysOffset:flatbuffers.Offset, pointsToOffset:flatbuffers.Offset, distanceOffset:flatbuffers.Offset):flatbuffers.Offset {
   BTreeLeafNode.startBTreeLeafNode(builder);
-  BTreeLeafNode.addId(builder, idOffset);
+  BTreeLeafNode.addId(builder, id);
   BTreeLeafNode.addLat(builder, lat);
   BTreeLeafNode.addLon(builder, lon);
   BTreeLeafNode.addPartOfWays(builder, partOfWaysOffset);

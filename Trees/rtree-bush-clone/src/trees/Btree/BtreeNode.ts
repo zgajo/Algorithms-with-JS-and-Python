@@ -45,36 +45,46 @@ export class BNode<K, V> {
 
   storeNodeToLeaf(builder: Builder) {
     const vals = (this.values as unknown as Node[]).map((node: Node) => {
-      const id = builder.createString(node.id);
-      const distance = BTreeLeafNode.createDistanceVector(
-        builder,
-        node.distance
-      );
-      const pointsToNums = node.pointsTo.map((node, index) => {
-        return builder.createString((node as Node).id || (node as string));
+      let distance =
+        node.distance && node.distance.length
+          ? BTreeLeafNode.createDistanceVector(builder, node.distance)
+          : null;
+
+      let pointsToNums = (node.pointsTo || []).map((node, index) => {
+        return Number((node as Node).id || (node as string));
       });
 
-      const pointsTo = BTreeLeafNode.createPointsToVector(
-        builder,
-        pointsToNums
-      );
+      let pointsTo = null;
+      if (node.pointsTo && node.pointsTo.length) {
+        pointsTo = BTreeLeafNode.createPointsToVector(builder, pointsToNums);
+      }
 
-      const partOfWayNums = node.partOfWays.map((w, index) => {
-        return builder.createString(w.id);
+      const partOfWayNums = (node.partOfWays || []).map((w, index) => {
+        return Number(w.id);
       });
 
-      const partOfWays = BTreeLeafNode.createPartOfWaysVector(
-        builder,
-        partOfWayNums
-      );
+      let partOfWays = null;
+
+      if (partOfWayNums && partOfWayNums.length) {
+        partOfWays = BTreeLeafNode.createPartOfWaysVector(
+          builder,
+          partOfWayNums
+        );
+      }
 
       BTreeLeafNode.startBTreeLeafNode(builder);
-      BTreeLeafNode.addId(builder, id);
-      BTreeLeafNode.addLat(builder, node.lat);
-      BTreeLeafNode.addLon(builder, node.lon);
-      BTreeLeafNode.addDistance(builder, distance);
-      BTreeLeafNode.addPointsTo(builder, pointsTo);
-      BTreeLeafNode.addPartOfWays(builder, partOfWays);
+      BTreeLeafNode.addId(builder, Number(node.id));
+      if (node.lat) BTreeLeafNode.addLat(builder, node.lat);
+      if (node.lon) BTreeLeafNode.addLon(builder, node.lon);
+      if (distance) {
+        BTreeLeafNode.addDistance(builder, distance);
+      }
+      if (pointsTo) {
+        BTreeLeafNode.addPointsTo(builder, pointsTo);
+      }
+      if (partOfWays) {
+        BTreeLeafNode.addPartOfWays(builder, partOfWays);
+      }
       const protoNode = BTreeLeafNode.endBTreeLeafNode(builder);
       // for (const [key, value] of Object.entries(node.tags || {})) {
       //   protoNode.getTagsMap().set(key, value);
@@ -84,7 +94,7 @@ export class BNode<K, V> {
     });
 
     const values = BTreeNode.createValuesVector(builder, vals);
-    const keysNums = this.keys.map((key) => builder.createString(String(key)));
+    const keysNums = this.keys.map((key) => Number(key));
     const keys = BTreeNode.createKeysVector(builder, keysNums);
 
     BTreeNode.startBTreeNode(builder);
@@ -100,6 +110,39 @@ export class BNode<K, V> {
   storeNodeTo(builder: Builder) {
     return 0;
   }
+
+  storeProtoNodeToLeaf(leafNode: Schema.BTreeNode) {
+    this.keys.forEach((key) => leafNode.addKeys(String(key)));
+
+    (this.values as unknown as Node[]).forEach((node: Node) => {
+      if (node.id === "1134162801") {
+        console.log("1134162801", node);
+      }
+      const protoNode = new Schema.Node();
+      protoNode.setId(node.id);
+      protoNode.setLat(node.lat);
+      protoNode.setLon(node.lon);
+
+      node.distance.forEach((d, index) => {
+        protoNode.addDistance(d);
+        protoNode.addPointsto(
+          (node.pointsTo[index] as Node).id || (node.pointsTo[index] as string)
+        );
+      });
+
+      node.partOfWays.forEach((w, index) => {
+        protoNode.addPartofways(w.id);
+      });
+
+      for (const [key, value] of Object.entries(node.tags || {})) {
+        protoNode.getTagsMap().set(key, value);
+      }
+
+      leafNode.addValues(protoNode);
+    });
+  }
+
+  storeProtoNodeTo(internalNode: Schema.BTreeNode) {}
 
   ///////////////////////////////////////////////////////////////////////////
   // Shared methods /////////////////////////////////////////////////////////

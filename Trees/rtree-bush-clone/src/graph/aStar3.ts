@@ -1,7 +1,13 @@
 import * as path from "path";
+import * as fs from "fs";
 import BTree from "../trees/Btree";
 
 import { Node } from "../trees/Node";
+import { ByteBuffer } from "flatbuffers";
+import { BNodesTree } from "../flatbuffers/map/node/b-nodes-tree";
+import { BTreeNode } from "../flatbuffers/map/node/b-tree-node";
+import { defaultComparator } from "sorted-btree";
+import { BTreeLeafNode } from "../flatbuffers/map/node/b-tree-leaf-node";
 
 export function heuristic(a: Node, b: Node) {
   // euclidian distance
@@ -70,26 +76,114 @@ function removeFromArray(arr: SearchNode[], el: Node) {
   return arr;
 }
 
-export class AStar2 {
-  nodesBtree: BTree;
+export class AStar3 {
+  btree: BNodesTree;
 
   constructor(filePath: string) {
-    this.nodesBtree = new BTree();
-    this.nodesBtree.loadProtoNodesFromFile(path.join(filePath));
+    var bytes = new Uint8Array(fs.readFileSync(filePath));
+
+    var buf2 = new ByteBuffer(bytes);
+
+    // Get an accessor to the root object inside the buffer.
+    var btree = BNodesTree.getRootAsBNodesTree(buf2);
+    this.btree = btree;
+  }
+
+  indexOf(
+    node: BTreeNode | null | undefined,
+    key: string,
+    failXor: number,
+    leaf: boolean
+  ): number {
+    var cmp = defaultComparator;
+    var lo = 0,
+      hi = node?.keysLength() as number,
+      mid = hi >> 1;
+    let leafNodeFound = false;
+    while (lo < hi) {
+      var c = cmp(node?.keys(mid), key);
+      if (c < 0) lo = mid + 1;
+      else if (c > 0)
+        // key < keys[mid]
+        hi = mid;
+      else if (c === 0) {
+        if (leaf) {
+          leafNodeFound = true;
+        }
+        return mid;
+      } else {
+        // c is NaN or otherwise invalid
+        if (key === key) {
+          // at least the search key is not NaN
+          return node?.keysLength() as number;
+        } else throw new Error("BTree: NaN was used as a key");
+      }
+      mid = (lo + hi) >> 1;
+    }
+    if (leaf && !leafNodeFound) {
+      throw new Error("BTree: Key not found in db");
+    }
+    return mid ^ failXor;
+  }
+
+  getKey(key: string) {
+    let node = this.btree.root();
+    let foundNode = null;
+
+    while (!foundNode && node) {
+      const index = this.indexOf(
+        node,
+        key,
+        0,
+        (node?.childrenLength() as number) <= 0
+      );
+      if (node?.childrenLength()) {
+        node = node?.children(index);
+      } else {
+        foundNode = node?.values(index);
+      }
+    }
+
+    return foundNode;
+  }
+
+  createNode(key: string) {
+    const keyNode = this.getKey(key);
+    const keyNodeDistance = [];
+    const keyNodePointsTo = [];
+    for (
+      let index = 0;
+      index < (keyNode as BTreeLeafNode)?.distanceLength();
+      index++
+    ) {
+      keyNodeDistance.push(keyNode?.distance(index));
+      keyNodePointsTo.push(keyNode?.pointsTo(index));
+    }
+
+    const node = new Node({
+      id: keyNode?.id() as string,
+      lat: keyNode?.lat() as number,
+      lon: keyNode?.lon() as number,
+      distance: keyNodeDistance as number[],
+      pointsTo: keyNodePointsTo as string[],
+    });
+
+    return node;
   }
 
   search(start: string, e: string) {
     let openedSet: SearchNode[] = [];
     let closedSet: Node[] = [];
     let path = [];
-    let end = this.nodesBtree.get(e);
-    let current;
 
-    this.nodesBtree.get(start);
+    const startNode = this.createNode(start);
+    const end = this.createNode(e);
 
-    const startNode = new SearchNode(this.nodesBtree.get(start));
+    let current: SearchNode | null = null;
 
-    openedSet.push(startNode);
+    const startSearchNode = new SearchNode(startNode);
+
+    openedSet.push(startSearchNode);
 
     while (openedSet.length) {
       // search node
@@ -112,9 +206,9 @@ export class AStar2 {
         }
       }
 
-      current = openedSet[lowestFIndex];
+      current = openedSet[lowestFIndex] as SearchNode;
 
-      if (current.node === end) {
+      if (current.node.id === end.id) {
         // console.log("Done!", current, end);
         break;
       }
@@ -127,16 +221,14 @@ export class AStar2 {
 
       // generate q's 8 successors and set their parents to q
       for (const i in current.node.pointsTo) {
-        const newNode = this.nodesBtree.get(current.node.pointsTo[i] as string);
+        const newNode = this.createNode(current.node.pointsTo[i] as string);
         const newSearchNode = openedSet.find((sn) => sn.node.id === newNode.id);
 
-        const neighbor =
-          newSearchNode ||
-          new SearchNode(this.nodesBtree.get(current.node.pointsTo[i]));
+        const neighbor = newSearchNode || new SearchNode(newNode);
 
         const neighborDistance = current.node.distance[i];
 
-        if (!closedSet.includes(neighbor.node)) {
+        if (!closedSet.map((sn) => sn.id).includes(neighbor.node.id)) {
           let tempG = current.gScore + neighborDistance;
           // f(n) = g(n) + f(n)
           // g(n) is the cost of the path from the start node to n,
@@ -185,7 +277,7 @@ export class AStar2 {
     path.forEach((sn) => {
       if (sn?.previous) {
         const indexOf = sn.previous.node.pointsTo
-          .map((nodeID) => this.nodesBtree.get(nodeID).id)
+          .map((node) => (node as Node).id || node)
           .indexOf(sn.node.id);
 
         distance += sn.previous.node.distance[indexOf];

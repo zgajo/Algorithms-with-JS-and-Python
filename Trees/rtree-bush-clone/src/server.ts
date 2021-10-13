@@ -5,6 +5,8 @@ import { AStar } from "./graph/aStar";
 import { bTreeWay, bTreeWayNode } from "./dataGen";
 import { Node } from "./trees/Node";
 import { AStar2 } from "./graph/aStar2";
+import { AStar3 } from "./graph/aStar3";
+import { COUNTRY } from "./utils/constants";
 
 const app = express();
 const port = 4000;
@@ -71,7 +73,7 @@ app.get("/", (req: Request, res: Response) => {
   console.timeEnd("astar");
 
   console.time("astar 2");
-  new AStar2().search(
+  new AStar2(path.join(__dirname, COUNTRY + "nodesBtreeNodes")).search(
     // bTreeWayNode.get("1934144326") as Node,
     startNode.id,
     // bTreeWayNode.get("51390143") as Node,
@@ -83,6 +85,20 @@ app.get("/", (req: Request, res: Response) => {
     // bTreeWayNode.get("748833076") as Node
   );
   console.timeEnd("astar 2");
+
+  console.time("astar 3");
+  new AStar3(path.join(__dirname, COUNTRY + "BtreeNodes.bin")).search(
+    // bTreeWayNode.get("1934144326") as Node,
+    startNode.id,
+    // bTreeWayNode.get("51390143") as Node,
+    endNode.id
+
+    // r.selo -> rovinj
+
+    // bTreeWayNode.get("1454283110") as Node,
+    // bTreeWayNode.get("748833076") as Node
+  );
+  console.timeEnd("astar 3");
 
   res.render("index", {
     title: "Welcome to Login system",

@@ -8,6 +8,7 @@ import { Way } from "./trees/Way";
 import { Node } from "./trees/Node";
 import { AStar, haversine } from "./graph/aStar";
 import { connectNodesInWay } from "./utils/helper";
+import { COUNTRY } from "./utils/constants";
 
 const btree = new BTree();
 const bTreeCity = new BTree();
@@ -19,10 +20,6 @@ const bTreeAddress = new BTree();
 const rtree = new RTree(10);
 
 const main = () => {
-  bTreeWay._maxNodeSize;
-  bTreeWay._size;
-  bTreeWay.getRoot();
-
   // console.log(rtree.search(new Node(42.5059199, 1.5289214)));
   // console.log("End");
   // console.log(btree);
@@ -97,7 +94,7 @@ If you are only working on a small data set you can of course simply read everyt
 console.time("test");
 console.log("start parse");
 parse({
-  filePath: path.join(__dirname, "croatia-latest.osm.pbf"),
+  filePath: path.join(__dirname, COUNTRY + "-latest.osm.pbf"),
   endDocument: function () {
     // console.log(rtree);
     console.timeEnd("test");

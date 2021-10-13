@@ -162,7 +162,25 @@ export default class BTree<K = any, V = any>
     fs.writeFileSync(filePath, serializedBytes, "binary");
   }
 
-  loadNodesFromFile(filePath: string) {
+  storeProtoNodesToFile(filePath: string) {
+    console.log("rootNode");
+    const root = new Schema.BNodesTree();
+    const rootNode = new Schema.BTreeNode();
+
+    this._root.storeProtoNodeTo(rootNode);
+
+    // store root to protobuf
+    root.setRoot(rootNode);
+    root.setSize(this._size);
+    root.setMaxnodesize(this._maxNodeSize);
+
+    console.log("root.toObject()", root.toObject());
+    const serializedBytes = root.serializeBinary();
+
+    fs.writeFileSync(filePath, serializedBytes);
+  }
+
+  loadProtoNodesFromFile(filePath: string) {
     console.log("loadNodesFromFile");
     console.time("readFileSync");
     const bytes = fs.readFileSync(filePath);
