@@ -89,54 +89,59 @@ export class AStar3 {
     this.btree = btree;
   }
 
-  indexOf(
-    node: BTreeNode | null | undefined,
-    key: string,
-    failXor: number,
-    leaf: boolean
-  ): number {
-    var cmp = defaultComparator;
+  indexOf = (
+    node: BTreeNode,
+    keysLength: number,
+    key: number,
+    leaf: boolean,
+    cmp = defaultComparator
+  ): number => {
     var lo = 0,
-      hi = node?.keysLength() as number,
-      mid = hi >> 1;
+      hi = keysLength,
+      mid = hi >> 1,
+      chosen = 0;
+
     let leafNodeFound = false;
+
     while (lo < hi) {
-      var c = cmp(node?.keys(mid), key);
-      if (c < 0) lo = mid + 1;
-      else if (c > 0)
-        // key < keys[mid]
-        hi = mid;
-      else if (c === 0) {
-        if (leaf) {
-          leafNodeFound = true;
+      var c = cmp(node.keys(mid), key);
+
+      if (c === 0) return mid;
+      else {
+        if (c < 0) {
+          lo = mid + 1;
+        } else if (c > 0) {
+          // key < keys[mid]
+          chosen = mid;
+          hi = mid;
+        } else {
+          // c is NaN or otherwise invalid
+          if (key === key)
+            // at least the search key is not NaN
+            return keysLength;
+          else throw new Error("BTree: NaN was used as a key");
         }
-        return mid;
-      } else {
-        // c is NaN or otherwise invalid
-        if (key === key) {
-          // at least the search key is not NaN
-          return node?.keysLength() as number;
-        } else throw new Error("BTree: NaN was used as a key");
       }
       mid = (lo + hi) >> 1;
     }
     if (leaf && !leafNodeFound) {
-      throw new Error("BTree: Key not found in db");
+      throw new Error(`BTree: Key ${key} not found in db`);
     }
-    return mid ^ failXor;
-  }
+    return chosen;
+  };
 
-  getKey(key: string) {
+  getKey(key: number) {
     let node = this.btree.root();
     let foundNode = null;
 
     while (!foundNode && node) {
       const index = this.indexOf(
         node,
+        node.keysLength(),
         key,
-        0,
         (node?.childrenLength() as number) <= 0
       );
+
       if (node?.childrenLength()) {
         node = node?.children(index);
       } else {
@@ -147,7 +152,7 @@ export class AStar3 {
     return foundNode;
   }
 
-  createNode(key: string) {
+  createNode(key: number) {
     const keyNode = this.getKey(key);
     const keyNodeDistance = [];
     const keyNodePointsTo = [];
@@ -161,22 +166,23 @@ export class AStar3 {
     }
 
     const node = new Node({
-      id: keyNode?.id() as string,
+      id: keyNode?.id() as unknown as string,
       lat: keyNode?.lat() as number,
       lon: keyNode?.lon() as number,
       distance: keyNodeDistance as number[],
-      pointsTo: keyNodePointsTo as string[],
+      pointsTo: keyNodePointsTo as unknown as string[],
     });
 
     return node;
   }
 
-  search(start: string, e: string) {
+  search(start: number, e: number) {
     let openedSet: SearchNode[] = [];
     let closedSet: Node[] = [];
     let path = [];
 
     const startNode = this.createNode(start);
+
     const end = this.createNode(e);
 
     let current: SearchNode | null = null;
@@ -193,14 +199,6 @@ export class AStar3 {
       //find the node with the least f on  the open list, call it "q"
       // pop q off the open list
       for (const index in openedSet) {
-        // console.log(
-        //   "openedSet[index].fScore",
-        //   openedSet[index].fScore,
-        //   "openedSet[lowestFIndex].fScore",
-        //   openedSet[lowestFIndex].fScore,
-        //   openedSet[index].node.id,
-        //   openedSet[lowestFIndex].node.id
-        // );
         if (openedSet[index].fScore < openedSet[lowestFIndex].fScore) {
           lowestFIndex = Number(index);
         }
@@ -221,7 +219,10 @@ export class AStar3 {
 
       // generate q's 8 successors and set their parents to q
       for (const i in current.node.pointsTo) {
-        const newNode = this.createNode(current.node.pointsTo[i] as string);
+        const n = current.node.pointsTo[i];
+
+        const newNode = this.createNode(Number((n as Node)?.id || n));
+
         const newSearchNode = openedSet.find((sn) => sn.node.id === newNode.id);
 
         const neighbor = newSearchNode || new SearchNode(newNode);
