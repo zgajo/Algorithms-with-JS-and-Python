@@ -18,7 +18,7 @@ table BTreeLeafNode {
   lon: double;
   part_of_ways: [double];
   points_to: [double];
-  distance: [float];
+  distance: [short];
 }
 
 table BTreeNode {
@@ -30,8 +30,8 @@ table BTreeNode {
 
 /** BTree of Nodes **/
 table BNodesTree {
-  size: double;
-  max_node_size: double;
+  size: short;
+  max_node_size: ubyte;
   root: BTreeNode;
 }
 
