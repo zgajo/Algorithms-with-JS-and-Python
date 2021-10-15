@@ -6,62 +6,76 @@ import { BNodesTree } from "./flatbuffers/map/node/b-nodes-tree";
 import { BTreeNode } from "./flatbuffers/map/node/b-tree-node";
 import { COUNTRY } from "./utils/constants";
 
-const indexOf = (
-  node: BTreeNode | null | undefined,
+function indexOf(
+  node: BTreeNode,
+  keysLength: number,
   key: number,
-  failXor: number,
   leaf: boolean
-): number => {
+): number {
   var cmp = defaultComparator;
   var lo = 0,
-    hi = node?.keysLength() as number,
-    mid = hi >> 1;
+    hi = keysLength,
+    mid = hi >> 1,
+    chosen = 0;
+
   let leafNodeFound = false;
+
   while (lo < hi) {
-    var c = cmp(node?.keys(mid), key);
-    if (c < 0) lo = mid + 1;
-    else if (c > 0)
-      // key < keys[mid]
-      hi = mid;
-    else if (c === 0) {
-      if (leaf) {
-        leafNodeFound = true;
+    console.log("------------------");
+    console.log("lo", lo, "mid", mid, "hi", hi);
+    console.log("keys(mid)", node.keys(mid));
+
+    var c = cmp(node.keys(mid), key);
+    console.log("c", c);
+
+    if (c === 0) return mid;
+    else {
+      if (c < 0) {
+        lo = mid + 1;
+      } else if (c > 0) {
+        // key < keys[mid]
+        chosen = mid;
+        hi = mid;
+      } else {
+        // c is NaN or otherwise invalid
+        if (key === key)
+          // at least the search key is not NaN
+          return keysLength;
+        else throw new Error("BTree: NaN was used as a key");
       }
-      return mid;
-    } else {
-      // c is NaN or otherwise invalid
-      if (key === key) {
-        // at least the search key is not NaN
-        return node?.keysLength() as number;
-      } else throw new Error("BTree: NaN was used as a key");
     }
     mid = (lo + hi) >> 1;
+
+    console.log("------------------");
   }
   if (leaf && !leafNodeFound) {
     throw new Error("BTree: Key not found in db");
   }
-  return mid ^ failXor;
-};
+  return chosen;
+}
 
-const getKey = (key: string, root: BTreeNode | null | undefined) => {
+const getKey = (key: number, root: BTreeNode | null | undefined) => {
   let node = root;
   let foundNode = null;
+
+  const indexes = [];
 
   while (!foundNode && node) {
     const index = indexOf(
       node,
-      Number(key),
-      0,
+      node.keysLength(),
+      key,
       (node?.childrenLength() as number) <= 0
     );
+    indexes.push(index);
     if (node?.childrenLength()) {
       node = node?.children(index);
     } else {
-      console.log(index);
       foundNode = node?.values(index);
-      console.log("found", foundNode);
     }
   }
+
+  console.log("indexes", indexes);
 
   return foundNode;
 };
@@ -82,7 +96,15 @@ var btree = BNodesTree.getRootAsBNodesTree(buf2);
 const root = btree.root();
 
 console.time("find");
-const findNode = getKey("1934144326", root);
+const findNode = getKey(1934144326, root);
 console.timeEnd("find");
 console.log(findNode?.id(), findNode?.lat(), findNode?.lon());
-console.log(btree);
+console.log(
+  "path to: [1,5,12,19]",
+  root?.children(1)?.children(5)?.children(12)?.values(19)?.id()
+);
+
+const l = root?.keysLength() || 0;
+for (let i = 0; i < l; i++) {
+  console.log(root?.keys(i));
+}

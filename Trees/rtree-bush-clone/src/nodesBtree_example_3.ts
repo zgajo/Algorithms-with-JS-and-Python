@@ -10,10 +10,10 @@ import { connectNodesInWay } from "./utils/helper";
 
 const bTreeLoad = new BTree();
 const bTreeTest = new BTree();
-const bTreeNode = new BTree();
+const bTreeNode: BTree<number, any> = new BTree();
 const bTreeHistoric = new BTree();
-export const bTreeWay: BTree<string, Way> = new BTree();
-export const bTreeWayNode: BTree<string, Node> = new BTree();
+export const bTreeWay: BTree<number, Way> = new BTree();
+export const bTreeWayNode: BTree<number, Node> = new BTree();
 
 const shouldStoreHistoric = (node: any) => {
   // Moze biti i relation i way
@@ -56,14 +56,14 @@ const shouldStoreHistoric = (node: any) => {
 
 const createNodesForWay = (newWay: Way) => {
   newWay.nodeRefs.forEach((element: string) => {
-    const node = bTreeWayNode.get(element);
+    const node = bTreeWayNode.get(Number(element));
 
     if (node) {
       node.increaseLinkCount();
       node.partOfWays.push(newWay);
       newWay.addNode(node);
     } else {
-      const storedNode = bTreeNode.get(element);
+      const storedNode = bTreeNode.get(Number(element));
 
       const newNode = new Node({
         ...storedNode,
@@ -71,7 +71,7 @@ const createNodesForWay = (newWay: Way) => {
 
       newNode.addWay(newWay);
 
-      bTreeWayNode.set(element, newNode);
+      bTreeWayNode.set(Number(element), newNode);
 
       newWay.addNode(newNode);
     }
@@ -91,14 +91,24 @@ const main = () => {
       // zadnji node
       if (index === way.nodes.length - 1) {
         nodesDistance += haversine(way.nodes[index - 1], node);
-        connectNodesInWay(way, startCalculationNode, node, nodesDistance);
+        connectNodesInWay(
+          way,
+          startCalculationNode,
+          node,
+          Number(nodesDistance.toFixed(2))
+        );
         // ovo je kad se ne brise
         return true;
       }
       // ovo je kad se ne brise
       if (node.linkCount > 1) {
         nodesDistance += haversine(way.nodes[index - 1], node);
-        connectNodesInWay(way, startCalculationNode, node, nodesDistance);
+        connectNodesInWay(
+          way,
+          startCalculationNode,
+          node,
+          Number(nodesDistance.toFixed(2))
+        );
         startCalculationNode = node;
         nodesDistance = 0;
         return true;
@@ -113,7 +123,7 @@ const main = () => {
     path.join(__dirname, COUNTRY + "BtreeNodes.bin")
   );
   console.log("bTreeHistoric", bTreeHistoric.valuesArray().length);
-  console.log(bTreeHistoric.get("Slap Sopot"));
+  // console.log(bTreeWayNode.get("1934144326"));
 
   bTreeHistoric.storeNodesToFile(
     path.join(__dirname, COUNTRY + "BtreeHistoricNodes.bin")
@@ -133,7 +143,7 @@ parse({
   },
   bounds: function (bounds: any) {},
   node: function (node: any) {
-    bTreeNode.set(node.id, node);
+    bTreeNode.set(Number(node.id), node);
 
     if (shouldStoreHistoric(node)) {
       bTreeHistoric.set(node.tags.name, node);
@@ -186,7 +196,7 @@ parse({
 
       createNodesForWay(newWay);
 
-      bTreeWay.set(way.id, newWay);
+      bTreeWay.set(Number(way.id), newWay);
     }
   },
   relation: function (relation: any) {},

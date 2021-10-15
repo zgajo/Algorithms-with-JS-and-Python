@@ -1,16 +1,28 @@
 namespace Map.Node;
 
+struct Short {
+  k: short;
+}
+
+table String {
+  k: string;
+}
+
+union Key {
+  Short, String
+}
+
 table BTreeLeafNode {
-  id: short;
+  id: double;
   lat: double;
   lon: double;
-  part_of_ways: [short];
-  points_to: [short];
-  distance: [double];
+  part_of_ways: [double];
+  points_to: [double];
+  distance: [float];
 }
 
 table BTreeNode {
-  keys: [short];
+  keys: [double];
   values: [BTreeLeafNode];  
   is_shared: bool = false;
   children: [BTreeNode];
@@ -18,8 +30,8 @@ table BTreeNode {
 
 /** BTree of Nodes **/
 table BNodesTree {
-  size: short;
-  max_node_size: short;
+  size: double;
+  max_node_size: double;
   root: BTreeNode;
 }
 

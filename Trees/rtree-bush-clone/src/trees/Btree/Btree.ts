@@ -142,9 +142,6 @@ export default class BTree<K = any, V = any>
     console.log("rootNode");
     var builder = new Builder(1024);
 
-    // root
-    // rootNode
-
     const rootNode = this._root.storeNodeTo(builder);
 
     BNodesTree.startBNodesTree(builder);
