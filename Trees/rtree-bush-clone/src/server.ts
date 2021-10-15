@@ -87,11 +87,12 @@ app.get("/", (req: Request, res: Response) => {
   console.timeEnd("astar 2");
 
   console.time("astar 3");
+  console.log("a star");
   new AStar3(path.join(__dirname, COUNTRY + "BtreeNodes.bin")).search(
     // bTreeWayNode.get("1934144326") as Node,
-    startNode.id,
+    Number(startNode.id),
     // bTreeWayNode.get("51390143") as Node,
-    endNode.id
+    Number(endNode.id)
 
     // r.selo -> rovinj
 

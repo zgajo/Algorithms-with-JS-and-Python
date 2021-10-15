@@ -10,9 +10,9 @@ function indexOf(
   node: BTreeNode,
   keysLength: number,
   key: number,
-  leaf: boolean
+  leaf: boolean,
+  cmp = defaultComparator
 ): number {
-  var cmp = defaultComparator;
   var lo = 0,
     hi = keysLength,
     mid = hi >> 1,
@@ -48,9 +48,9 @@ function indexOf(
 
     console.log("------------------");
   }
-  if (leaf && !leafNodeFound) {
-    throw new Error("BTree: Key not found in db");
-  }
+  // if (leaf && !leafNodeFound) {
+  //   throw new Error("BTree: Key not found in db");
+  // }
   return chosen;
 }
 
@@ -96,6 +96,12 @@ var btree = BNodesTree.getRootAsBNodesTree(buf2);
 const root = btree.root();
 
 console.time("find");
+
+const l = root?.keysLength() || 0;
+for (let i = 0; i < l; i++) {
+  console.log(root?.keys(i));
+}
+
 const findNode = getKey(1934144326, root);
 console.timeEnd("find");
 console.log(findNode?.id(), findNode?.lat(), findNode?.lon());
@@ -103,8 +109,3 @@ console.log(
   "path to: [1,5,12,19]",
   root?.children(1)?.children(5)?.children(12)?.values(19)?.id()
 );
-
-const l = root?.keysLength() || 0;
-for (let i = 0; i < l; i++) {
-  console.log(root?.keys(i));
-}

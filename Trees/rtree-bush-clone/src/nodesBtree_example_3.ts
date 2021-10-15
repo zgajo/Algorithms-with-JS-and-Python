@@ -95,7 +95,7 @@ const main = () => {
           way,
           startCalculationNode,
           node,
-          Number(nodesDistance.toFixed(2))
+          parseInt(String(nodesDistance))
         );
         // ovo je kad se ne brise
         return true;
@@ -107,7 +107,7 @@ const main = () => {
           way,
           startCalculationNode,
           node,
-          Number(nodesDistance.toFixed(2))
+          parseInt(String(nodesDistance))
         );
         startCalculationNode = node;
         nodesDistance = 0;
