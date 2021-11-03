@@ -32,6 +32,17 @@ damage():number {
   return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
 }
 
+mutate_damage(value:number):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt16(this.bb_pos + offset, value);
+  return true;
+}
+
 static startWeapon(builder:flatbuffers.Builder) {
   builder.startObject(2);
 }

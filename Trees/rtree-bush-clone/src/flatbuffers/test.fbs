@@ -1,0 +1,14 @@
+// Example IDL file for our monster's schema.
+
+namespace Test;
+
+
+table Test {
+  vec: [TestNode];
+}
+
+table TestNode {
+  name:string;
+}
+
+root_type Test;

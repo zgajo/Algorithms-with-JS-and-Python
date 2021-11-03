@@ -28,9 +28,31 @@ size():number {
   return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
 }
 
+mutate_size(value:number):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt16(this.bb_pos + offset, value);
+  return true;
+}
+
 maxNodeSize():number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
+  return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+}
+
+mutate_max_node_size(value:number):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint8(this.bb_pos + offset, value);
+  return true;
 }
 
 root(obj?:BTreeNode):BTreeNode|null {
@@ -47,7 +69,7 @@ static addSize(builder:flatbuffers.Builder, size:number) {
 }
 
 static addMaxNodeSize(builder:flatbuffers.Builder, maxNodeSize:number) {
-  builder.addFieldInt16(1, maxNodeSize, 0);
+  builder.addFieldInt8(1, maxNodeSize, 0);
 }
 
 static addRoot(builder:flatbuffers.Builder, rootOffset:flatbuffers.Offset) {
