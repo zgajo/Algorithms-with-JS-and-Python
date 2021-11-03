@@ -17,6 +17,7 @@
     "flatbuffers": "^2.0.4",
     "google-protobuf": "^3.18.0",
     "jade": "^1.11.0",
+    "ngeohash": "^0.6.3",
     "osm-read": "^0.7.0",
     "pbf": "^3.2.1",
     "rbush": "^3.0.1",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
+    "@types/ngeohash": "^0.6.4",
     "@types/pbf": "^3.0.2",
     "@types/protocol-buffers-schema": "^3.4.1",
     "@types/rbush": "^3.0.0",
