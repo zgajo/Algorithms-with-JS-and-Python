@@ -1,1 +1,1 @@
-export const COUNTRY = "croatia";
+export const COUNTRY = "andorra";

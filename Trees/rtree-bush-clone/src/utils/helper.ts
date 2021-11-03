@@ -1,7 +1,7 @@
 import { Node } from "../trees/Node";
 import { Way } from "../trees/Way";
 
-function degreesToRadians(degrees: number) {
+export function degreesToRadians(degrees: number) {
   return (degrees * Math.PI) / 180;
 }
 
