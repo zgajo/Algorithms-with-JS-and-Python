@@ -9,7 +9,7 @@ export class RTree {
   constructor(maxEntries: number = 9) {
     // max entries in a node is 9 by default; min node fill is 40% for best performance
     this.maxEntries = Math.max(4, maxEntries);
-    this.minEntries = Math.max(2, maxEntries * 0.4);
+    this.minEntries = Math.max(2, parseInt(String(maxEntries * 0.4)));
     this.data = new Rectangle([]);
   }
 

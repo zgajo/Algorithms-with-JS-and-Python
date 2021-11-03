@@ -1,3 +1,4 @@
+import { Node } from "../Node";
 import { BBox } from "./BBox";
 
 export class Rectangle extends BBox {
@@ -6,6 +7,7 @@ export class Rectangle extends BBox {
   maxX: number;
   maxY: number;
   children: Rectangle[];
+  values: Node[];
   height: number;
   leaf: boolean;
 
@@ -13,6 +15,7 @@ export class Rectangle extends BBox {
     super();
 
     this.children = children || [];
+    this.values = [];
     this.height = 1;
     this.leaf = true;
     this.minX = Infinity;
@@ -52,6 +55,7 @@ export class Rectangle extends BBox {
     rtreeMinEntries: number,
     compare: typeof this.compareMinX | typeof this.compareMinY
   ) {
+    rtreeMinEntries = parseInt(String(rtreeMinEntries));
     const nodeChildrenLength = this.children.length;
     this.children.sort(compare);
 
