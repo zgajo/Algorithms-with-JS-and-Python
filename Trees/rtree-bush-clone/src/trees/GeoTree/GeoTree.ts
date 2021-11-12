@@ -1,8 +1,53 @@
+import geohash from "ngeohash";
+
+import {
+  degreesToRadians,
+  distanceInKmBetweenEarthCoordinates,
+} from "../../utils/helper";
+
 export class GeoTreeNode {
   id: string;
+  pointsTo: GeoTreeNode[] | string[];
+  distance: number[];
+  linkCount: number;
 
-  constructor(id: string) {
-    this.id = id;
+  constructor(node: {
+    id: string;
+    pointsTo?: GeoTreeNode[] | string[];
+    distance?: number[];
+    linkCount?: number;
+  }) {
+    this.id = node.id;
+    this.pointsTo = node.pointsTo || [];
+    this.distance = node.distance || [];
+    this.linkCount = node.linkCount || 1;
+  }
+
+  connectToNode(node: GeoTreeNode) {
+    (this.pointsTo as GeoTreeNode[]).push(node);
+    this.distance.push(this.distanceInKmBetweenEarthCoordinates(node));
+  }
+
+  increaseLinkCount() {
+    this.linkCount += 1;
+  }
+
+  distanceInKmBetweenEarthCoordinates(pointTo: GeoTreeNode) {
+    var earthRadiusKm = 6371;
+    const from = geohash.decode(this.id);
+    const to = geohash.decode(pointTo.id);
+
+    var dLat = degreesToRadians(to.latitude - from.latitude);
+    var dLon = degreesToRadians(to.longitude - from.longitude);
+
+    const lat1 = degreesToRadians(from.latitude);
+    const lat2 = degreesToRadians(to.latitude);
+
+    var a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c;
   }
 }
 export class GeoTreeBox {
@@ -122,10 +167,48 @@ class GeoTree {
 
     return data.findIndex(search);
   }
+
+  getNode(hash: string) {
+    let geolevel = 1;
+    let tmpData: GeoTreeBox[] | undefined = this.data;
+    let node: GeoTreeNode[] | undefined;
+
+    while (geolevel <= this.precision && tmpData) {
+      const hashStr = hash.substring(0, geolevel);
+
+      if (geolevel === this.precision) {
+        return this.searchLeafNode(tmpData, hashStr);
+      } else {
+        tmpData = this.searchInternalNode(tmpData, hashStr);
+      }
+
+      if (!tmpData) throw new Error("Internal node not found");
+
+      ++geolevel;
+    }
+
+    return node;
+  }
+
+  searchInternalNode(tmpData: GeoTreeBox[] | undefined, hashStr: string) {
+    return (tmpData || []).find((value) => {
+      return value.key === hashStr;
+    })?.data;
+  }
+
+  searchLeafNode(tmpData: GeoTreeBox[] | undefined, hashStr: string) {
+    return (tmpData || []).find((value) => {
+      return value.key === hashStr;
+    })?.values;
+  }
 }
 
 const tree = new GeoTree(5);
 
-tree.insert("aabbs", new GeoTreeNode("aabbs"));
-tree.insert("aabaa", new GeoTreeNode("aabba"));
-tree.insert("aabba", new GeoTreeNode("aabba"));
+tree.insert("aabbs", new GeoTreeNode({ id: "aabbs" }));
+tree.insert("aabaa", new GeoTreeNode({ id: "aabba" }));
+tree.insert("aabba", new GeoTreeNode({ id: "aabba" }));
+
+const node = tree.getNode("aabba");
+
+console.log(node);
