@@ -57,15 +57,15 @@ export const connectGeotreeNodesInWay = (
   // oneway=yes
   // oneway=-1 suprotni smjer
   if (way.tags.oneway == "-1") {
-    (endNode.pointsTo as GeoTreeNode[]).push(startCalculationNode);
+    endNode.pointsTo.push(startCalculationNode.id);
     endNode.distance.push(nodesDistance);
   } else if (way.tags.oneway === "yes" || way.tags.junction === "roundabout") {
-    (startCalculationNode.pointsTo as GeoTreeNode[]).push(endNode);
+    startCalculationNode.pointsTo.push(endNode.id);
     startCalculationNode.distance.push(nodesDistance);
   } else {
-    (startCalculationNode.pointsTo as GeoTreeNode[]).push(endNode);
+    startCalculationNode.pointsTo.push(endNode.id);
     startCalculationNode.distance.push(nodesDistance);
-    (endNode.pointsTo as GeoTreeNode[]).push(startCalculationNode);
+    endNode.pointsTo.push(startCalculationNode.id);
     endNode.distance.push(nodesDistance);
   }
 };
