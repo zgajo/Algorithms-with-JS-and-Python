@@ -98,7 +98,7 @@ export class GeoTreeBox {
   }
 }
 
-class GeoTree {
+export class GeoTree {
   precision: number;
   data: GeoTreeBox[];
 
@@ -182,7 +182,7 @@ class GeoTree {
         tmpData = this.searchInternalNode(tmpData, hashStr);
       }
 
-      if (!tmpData) throw new Error("Internal node not found");
+      if (!tmpData) return;
 
       ++geolevel;
     }

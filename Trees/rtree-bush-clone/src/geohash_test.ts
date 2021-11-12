@@ -4,12 +4,15 @@ import { parse } from "osm-read";
 import * as path from "path";
 import { haversine, AStar2 } from "./graph/aStar2";
 import { AStar3 } from "./graph/aStar3";
+import Btree from "./trees/Btree";
 import BTree from "./trees/Btree";
+import { GeoTree, GeoTreeNode } from "./trees/GeoTree/GeoTree";
 import { Node } from "./trees/Node";
 import { Way } from "./trees/Way";
 import { COUNTRY } from "./utils/constants";
-import { connectNodesInWay } from "./utils/helper";
+import { connectGeotreeNodesInWay, connectNodesInWay } from "./utils/helper";
 
+const geotree: GeoTree = new GeoTree(10);
 const bTreeNode: BTree<number, any> = new BTree();
 const bTreeHistoric = new BTree();
 export const bTreeWay: BTree<number, Way> = new BTree();
@@ -92,24 +95,102 @@ const main = () => {
       // zadnji node
       if (index === way.nodes.length - 1) {
         nodesDistance += haversine(way.nodes[index - 1], node);
-        connectNodesInWay(
+
+        let newStartNode = false;
+        let startGTreeCalculationNode = (geotree.getNode(
+          geohash.encode(startCalculationNode.lat, startCalculationNode.lon, 10)
+        ) || [])[0];
+        if (!startGTreeCalculationNode) {
+          newStartNode = true;
+          startGTreeCalculationNode = new GeoTreeNode({
+            id: geohash.encode(
+              startCalculationNode.lat,
+              startCalculationNode.lon,
+              10
+            ),
+          });
+        }
+
+        let newGeoTreeNode = false;
+        let gTreeNode = (geotree.getNode(
+          geohash.encode(node.lat, node.lon, 10)
+        ) || [])[0];
+        if (!gTreeNode) {
+          newStartNode = true;
+          gTreeNode = new GeoTreeNode({
+            id: geohash.encode(node.lat, node.lon, 10),
+          });
+        }
+
+        connectGeotreeNodesInWay(
           way,
-          startCalculationNode,
-          node,
+          startGTreeCalculationNode,
+          gTreeNode,
           parseInt(String(nodesDistance))
         );
+
+        if (newStartNode) {
+          geotree.insert(
+            startGTreeCalculationNode.id,
+            startGTreeCalculationNode
+          );
+        }
+
+        if (newGeoTreeNode) {
+          geotree.insert(gTreeNode.id, gTreeNode);
+        }
+
         // ovo je kad se ne brise
         return true;
       }
       // ovo je kad se ne brise
       if (node.linkCount > 1) {
         nodesDistance += haversine(way.nodes[index - 1], node);
-        connectNodesInWay(
+
+        let newStartNode = false;
+        let startGTreeCalculationNode = (geotree.getNode(
+          geohash.encode(startCalculationNode.lat, startCalculationNode.lon, 10)
+        ) || [])[0];
+        if (!startGTreeCalculationNode) {
+          newStartNode = true;
+          startGTreeCalculationNode = new GeoTreeNode({
+            id: geohash.encode(
+              startCalculationNode.lat,
+              startCalculationNode.lon,
+              10
+            ),
+          });
+        }
+
+        let newGeoTreeNode = false;
+        let gTreeNode = (geotree.getNode(
+          geohash.encode(node.lat, node.lon, 10)
+        ) || [])[0];
+        if (!gTreeNode) {
+          newStartNode = true;
+          gTreeNode = new GeoTreeNode({
+            id: geohash.encode(node.lat, node.lon, 10),
+          });
+        }
+
+        connectGeotreeNodesInWay(
           way,
-          startCalculationNode,
-          node,
+          startGTreeCalculationNode,
+          gTreeNode,
           parseInt(String(nodesDistance))
         );
+
+        if (newStartNode) {
+          geotree.insert(
+            startGTreeCalculationNode.id,
+            startGTreeCalculationNode
+          );
+        }
+
+        if (newGeoTreeNode) {
+          geotree.insert(gTreeNode.id, gTreeNode);
+        }
+
         startCalculationNode = node;
         nodesDistance = 0;
         return true;
@@ -120,24 +201,8 @@ const main = () => {
     });
   });
 
-  bTreeWayNode.storeNodesToFile(
-    path.join(__dirname, COUNTRY + "BtreeNodes.bin")
-  );
-  console.log("bTreeHistoric", bTreeHistoric.valuesArray().length);
-  // console.log(bTreeWayNode.get("1934144326"));
-
-  bTreeHistoric.storeNodesToFile(
-    path.join(__dirname, COUNTRY + "BtreeHistoricNodes.bin")
-  );
-
-  bTreeWayNode.valuesArray().forEach((node) => {
-    bTreeWayNodeGeohash.set(geohash.encode(node.lat, node.lon), node);
-  });
-
-  bTreeWay.storeNodesToFile(path.join(__dirname, COUNTRY + "BtreeWays.bin"));
-
   // bTreeLoad.loadNodesFromFile(path.join(__dirname, "BtreeNodes.bin"));
-  console.log("object");
+  console.log(geotree);
 };
 
 parse({
