@@ -1,9 +1,17 @@
 import geohash from "ngeohash";
+import * as path from "path";
+
+import { Builder, ByteBuffer } from "flatbuffers";
+import * as fs from "fs";
+
+import { GTreeNode } from "../../flatbuffers/g-tree/g-tree-node";
 
 import {
   degreesToRadians,
   distanceInKmBetweenEarthCoordinates,
 } from "../../utils/helper";
+import { GTreeBox } from "../../flatbuffers/g-tree/g-tree-box";
+import { GTree } from "../../flatbuffers/g-tree/g-tree";
 
 export class GeoTreeNode {
   id: string;
@@ -174,6 +182,72 @@ export class GeoTree {
       return value.key === hashStr;
     })?.values;
   }
+
+  storeToTheFile(filePath: string) {
+    var builder = new Builder(1024);
+
+    const preparedData = this.prepareForFileStorage(this.data, builder);
+    const preparedDataV = GTree.createDataVector(builder, preparedData);
+
+    GTree.startGTree(builder);
+    GTree.addData(builder, preparedDataV);
+    GTree.addPrecision(builder, this.precision);
+    const root = GTree.endGTree(builder);
+
+    builder.finish(root);
+
+    const serializedBytes = builder.asUint8Array();
+
+    fs.writeFileSync(filePath, serializedBytes, "binary");
+  }
+
+  prepareForFileStorage(data: GeoTreeBox[], builder: Builder) {
+    return data.map((el) => {
+      if (el.values.length) {
+        // store leaf
+
+        const gNodesArray = el.values.map((value) => {
+          const id = builder.createString(value.id);
+          const distance = GTreeNode.createDistanceVector(
+            builder,
+            value.distance
+          );
+          const points = value.pointsTo.map((p) => builder.createString(p));
+          const pointsVector = GTreeNode.createPointsToVector(builder, points);
+
+          GTreeNode.startGTreeNode(builder);
+          GTreeNode.addId(builder, id);
+          GTreeNode.addDistance(builder, distance);
+
+          GTreeNode.addPointsTo(builder, pointsVector);
+
+          return GTreeNode.endGTreeNode(builder);
+        });
+
+        const key = builder.createString(el.key);
+
+        const values = GTreeBox.createValuesVector(builder, gNodesArray);
+
+        GTreeBox.startGTreeBox(builder);
+
+        GTreeBox.addKey(builder, key);
+        GTreeBox.addValues(builder, values);
+
+        return GTreeBox.endGTreeBox(builder);
+      }
+      // go lower
+      const gBoxData = this.prepareForFileStorage(el.data, builder);
+      const key = builder.createString(el.key);
+      const dataV = GTreeBox.createDataVector(builder, gBoxData);
+
+      GTreeBox.startGTreeBox(builder);
+
+      GTreeBox.addKey(builder, key);
+      GTreeBox.addData(builder, dataV);
+
+      return GTreeBox.endGTreeBox(builder);
+    });
+  }
 }
 
 const tree = new GeoTree(5);
@@ -183,5 +257,7 @@ tree.insert("aabaa", new GeoTreeNode({ id: "aabba" }));
 tree.insert("aabba", new GeoTreeNode({ id: "aabba" }));
 
 const node = tree.getNode("aabba");
+
+tree.storeToTheFile(path.join(__dirname, "GTest.bin"));
 
 console.log(node);

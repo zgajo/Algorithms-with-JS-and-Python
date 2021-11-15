@@ -1,0 +1,21 @@
+namespace GTree;
+
+
+table GTreeNode {
+  id: string;
+  points_to: [string];
+  distance: [short];
+}
+
+table GTreeBox {
+  key: string;
+  data: [GTreeBox];
+  values: [GTreeNode];
+}
+
+table GTree {
+  precision: byte;
+  data: [GTreeBox];
+}
+
+root_type GTree;

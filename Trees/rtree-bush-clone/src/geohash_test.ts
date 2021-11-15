@@ -201,6 +201,8 @@ const main = () => {
     });
   });
 
+  geotree.storeToTheFile(path.join(__dirname, COUNTRY + "GtreeWayNodes.bin"));
+
   // bTreeLoad.loadNodesFromFile(path.join(__dirname, "BtreeNodes.bin"));
   console.log(geotree);
 };
