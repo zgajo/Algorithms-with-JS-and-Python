@@ -7,6 +7,7 @@ import { Node } from "./trees/Node";
 import { AStar2 } from "./graph/aStar2";
 import { AStar3 } from "./graph/aStar3";
 import { COUNTRY } from "./utils/constants";
+import { AStar4 } from "./graph/aStar4";
 
 const app = express();
 const port = 4000;
@@ -100,6 +101,15 @@ app.get("/", (req: Request, res: Response) => {
     // bTreeWayNode.get("748833076") as Node
   );
   console.timeEnd("astar 3");
+
+  console.time("astar 4");
+
+  new AStar4(path.join(__dirname, COUNTRY + "GtreeWayNodes.bin")).search(
+    "sp91upk3u5n",
+    "sp94p2wdbs3"
+  );
+
+  console.timeEnd("astar 4");
 
   res.render("index", {
     title: "Welcome to Login system",
