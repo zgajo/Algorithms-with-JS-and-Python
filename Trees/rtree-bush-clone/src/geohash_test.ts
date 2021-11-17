@@ -106,13 +106,7 @@ const main = () => {
           ENCODE
         );
         let startGTreeCalculationNode = (geotree.getNode(h) || [])[0];
-        if (h === "sp91upkd6e5") {
-          console.log("object");
-          // console.log("sp91upkd130 points to sp91upk6r9v (7) i sp91upkd6e5 (7)");
-          // console.log(
-          //   "sp91upkd6e5 points to sp91upkeje7 (17), missing sp91upkd130 (7) "
-          // );
-        }
+
         if (!startGTreeCalculationNode) {
           newStartNode = true;
           startGTreeCalculationNode = new GeoTreeNode({
@@ -218,30 +212,30 @@ const main = () => {
     });
   });
 
-  console.time("astar 3");
-  console.log("a star");
-  new AStar3(path.join(__dirname, COUNTRY + "BtreeNodes.bin")).search(
-    // bTreeWayNode.get("1934144326") as Node,
-    Number(1934144326),
-    // bTreeWayNode.get("51390143") as Node,
-    Number(51390143)
+  // console.time("astar 3");
+  // console.log("a star");
+  // new AStar3(path.join(__dirname, COUNTRY + "BtreeNodes.bin")).search(
+  //   // bTreeWayNode.get("1934144326") as Node,
+  //   Number(1934144326),
+  //   // bTreeWayNode.get("51390143") as Node,
+  //   Number(51390143)
 
-    // r.selo -> rovinj
+  //   // r.selo -> rovinj
 
-    // bTreeWayNode.get("1454283110") as Node,
-    // bTreeWayNode.get("748833076") as Node
-  );
-  console.timeEnd("astar 3");
+  //   // bTreeWayNode.get("1454283110") as Node,
+  //   // bTreeWayNode.get("748833076") as Node
+  // );
+  // console.timeEnd("astar 3");
 
   geotree.storeToTheFile(path.join(__dirname, COUNTRY + "GtreeWayNodes.bin"));
-  console.time("astar 4");
+  // console.time("astar 4");
 
-  new AStar4(path.join(__dirname, COUNTRY + "GtreeWayNodes.bin")).search(
-    "sp91upk3u5n",
-    "sp94p2wdbs3"
-  );
+  // new AStar4(path.join(__dirname, COUNTRY + "GtreeWayNodes.bin")).search(
+  //   "sp91upk3u5n",
+  //   "sp94p2wdbs3"
+  // );
 
-  console.timeEnd("astar 4");
+  // console.timeEnd("astar 4");
 
   // bTreeLoad.loadNodesFromFile(path.join(__dirname, "BtreeNodes.bin"));
   console.log(geotree);
