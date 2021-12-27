@@ -22,12 +22,48 @@ export const bTreeWay: BTree<number, Way> = new BTree();
 export const bTreeWayNode: BTree<number, Node> = new BTree();
 export const bTreeWayNodeGeohash: BTree<string, Node> = new BTree();
 
-const shouldStoreHistoric = (node: any) => {
-  // Moze biti i relation i way
-  if (
-    (node.tags?.historic || node.tags?.tourism || node.tags?.waterway) &&
-    node.tags?.name
-  ) {
+const isWayToStore = (way: any) => {
+  return (
+    way.tags.highway &&
+    (way.tags.highway === "motorway" ||
+      way.tags.highway === "trunk" ||
+      way.tags.highway === "primary" ||
+      way.tags.highway === "tertiary" ||
+      way.tags.highway === "unclassified" ||
+      way.tags.highway === "residential" ||
+      way.tags.highway === "trunk_link" ||
+      way.tags.highway === "motorway_link" ||
+      way.tags.highway === "primary_link" ||
+      way.tags.highway === "secondary_link" ||
+      way.tags.highway === "tertiary_link" ||
+      way.tags.highway === "service" ||
+      way.tags.highway === "secondary")
+  );
+};
+
+const shouldStoreWaterway = (node: any) => {
+  if (node.tags?.waterway && node.tags?.name) {
+    // List of waterways we want to store
+    if (
+      node.tags.waterway &&
+      node.tags.waterway !== "dam" &&
+      node.tags.waterway !== "weir" &&
+      node.tags.waterway !== "waterfall" &&
+      node.tags.waterway !== "rapids" &&
+      node.tags.waterway !== "lock_gate"
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  return false;
+};
+
+const shouldStoreTourism = (node: any) => {
+  if (node.tags?.tourism && node.tags?.name) {
+    // List of tourisms we dont want to store
     if (
       node.tags.tourism &&
       (node.tags.tourism === "hostel" ||
@@ -44,17 +80,15 @@ const shouldStoreHistoric = (node: any) => {
       return false;
     }
 
-    if (
-      node.tags.waterway &&
-      node.tags.waterway !== "dam" &&
-      node.tags.waterway !== "weir" &&
-      node.tags.waterway !== "waterfall" &&
-      node.tags.waterway !== "rapids" &&
-      node.tags.waterway !== "lock_gate"
-    ) {
-      return false;
-    }
+    return true;
+  }
 
+  return false;
+};
+
+const shouldStoreHistoric = (node: any) => {
+  // Moze biti i relation i way
+  if (node.tags?.historic && node.tags?.name) {
     return true;
   }
 
@@ -251,53 +285,16 @@ parse({
   node: function (node: any) {
     bTreeNode.set(Number(node.id), node);
 
-    if (shouldStoreHistoric(node)) {
+    if (
+      shouldStoreHistoric(node) ||
+      shouldStoreWaterway(node) ||
+      shouldStoreTourism(node)
+    ) {
       bTreeHistoric.set(node.tags.name, node);
     }
   },
   way: function (way: Way) {
-    // if (shouldStoreHistoric(way)) {
-    //   const newWay = new Way(way);
-
-    //   createNodesForWay(newWay);
-
-    //   let minLat = newWay.nodes[0].lat;
-    //   let minLon = newWay.nodes[0].lon;
-    //   let maxLat = newWay.nodes[0].lat;
-    //   let maxLon = newWay.nodes[0].lon;
-
-    //   newWay.nodes.forEach((node) => {
-    //     if (node.lat > maxLat) maxLat = node.lat;
-    //     if (node.lat < minLat) minLat = node.lat;
-    //     if (node.lon > maxLon) maxLon = node.lon;
-    //     if (node.lon < minLon) minLat = node.lon;
-    //   });
-
-    //   const lat = (minLat + maxLat) / 2
-    //   const lon = (minLon + maxLon) / 2
-
-    //    new Node({
-
-    //    })
-
-    //   bTreeHistoric.set(way.tags.name, node);
-    // }
-
-    if (
-      (way.tags.highway && way.tags.highway === "motorway") ||
-      way.tags.highway === "trunk" ||
-      way.tags.highway === "primary" ||
-      way.tags.highway === "tertiary" ||
-      way.tags.highway === "unclassified" ||
-      way.tags.highway === "residential" ||
-      way.tags.highway === "trunk_link" ||
-      way.tags.highway === "motorway_link" ||
-      way.tags.highway === "primary_link" ||
-      way.tags.highway === "secondary_link" ||
-      way.tags.highway === "tertiary_link" ||
-      way.tags.highway === "service" ||
-      way.tags.highway === "secondary"
-    ) {
+    if (isWayToStore(way)) {
       const newWay = new Way(way);
 
       createNodesForWay(newWay);
