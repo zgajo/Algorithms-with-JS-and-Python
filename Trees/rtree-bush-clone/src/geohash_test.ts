@@ -22,12 +22,29 @@ export const bTreeWay: BTree<number, Way> = new BTree();
 export const bTreeWayNode: BTree<number, Node> = new BTree();
 export const bTreeWayNodeGeohash: BTree<string, Node> = new BTree();
 
-const shouldStoreHistoric = (node: any) => {
-  // Moze biti i relation i way
-  if (
-    (node.tags?.historic || node.tags?.tourism || node.tags?.waterway) &&
-    node.tags?.name
-  ) {
+const shouldStoreWaterway = (node: any) => {
+  if (node.tags?.waterway && node.tags?.name) {
+    // List of waterways we want to store
+    if (
+      node.tags.waterway &&
+      node.tags.waterway !== "dam" &&
+      node.tags.waterway !== "weir" &&
+      node.tags.waterway !== "waterfall" &&
+      node.tags.waterway !== "rapids" &&
+      node.tags.waterway !== "lock_gate"
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  return false;
+};
+
+const shouldStoreTourism = (node: any) => {
+  if (node.tags?.tourism && node.tags?.name) {
+    // List of tourisms we dont want to store
     if (
       node.tags.tourism &&
       (node.tags.tourism === "hostel" ||
@@ -44,17 +61,15 @@ const shouldStoreHistoric = (node: any) => {
       return false;
     }
 
-    if (
-      node.tags.waterway &&
-      node.tags.waterway !== "dam" &&
-      node.tags.waterway !== "weir" &&
-      node.tags.waterway !== "waterfall" &&
-      node.tags.waterway !== "rapids" &&
-      node.tags.waterway !== "lock_gate"
-    ) {
-      return false;
-    }
+    return true;
+  }
 
+  return false;
+};
+
+const shouldStoreHistoric = (node: any) => {
+  // Moze biti i relation i way
+  if (node.tags?.historic && node.tags?.name) {
     return true;
   }
 
@@ -251,7 +266,11 @@ parse({
   node: function (node: any) {
     bTreeNode.set(Number(node.id), node);
 
-    if (shouldStoreHistoric(node)) {
+    if (
+      shouldStoreHistoric(node) ||
+      shouldStoreWaterway(node) ||
+      shouldStoreTourism(node)
+    ) {
       bTreeHistoric.set(node.tags.name, node);
     }
   },
