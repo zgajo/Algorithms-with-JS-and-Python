@@ -1,30 +1,35 @@
 import geohash from "ngeohash";
-
 import { parse } from "osm-read";
 import * as path from "path";
-import { haversine, AStar2 } from "./graph/aStar2";
-import { AStar3 } from "./graph/aStar3";
-import { AStar4 } from "./graph/aStar4";
-import Btree from "./trees/Btree";
+import { NodeHelper } from "./entities/NodeHelper";
+import { WayHelper } from "./entities/WayHelper";
+import { haversine } from "./graph/aStar2";
 import BTree from "./trees/Btree";
 import { GeoTree, GeoTreeNode } from "./trees/GeoTree/GeoTree";
 import { Node } from "./trees/Node";
 import { Way } from "./trees/Way";
 import { COUNTRY } from "./utils/constants";
-import {
-  connectGeotreeNodesInWay,
-  connectNodesInWay,
-  isWayToStore,
-  shouldStoreHistoric,
-  shouldStoreTourism,
-  shouldStoreWaterway,
-} from "./utils/helper";
+import { connectGeotreeNodesInWay } from "./utils/helper";
 
-const ENCODE = 11;
+const wayHelper = new WayHelper();
+const nodeHelper = new NodeHelper();
+
+const ENCODE = 9;
+
+interface INodesTable {
+  wayNodes: GeoTree;
+  poiNodes: GeoTree;
+  index: { places: BTree<number, any> };
+}
+const NodesTable: INodesTable = {
+  wayNodes: new GeoTree(ENCODE),
+  poiNodes: new GeoTree(ENCODE),
+  index: { places: new BTree() },
+};
 
 const geotree: GeoTree = new GeoTree(ENCODE);
 const bTreeNode: BTree<number, any> = new BTree();
-const bTreeHistoric = new BTree();
+const bTreePOI = new BTree();
 export const bTreeWay: BTree<number, Way> = new BTree();
 export const bTreeWayNode: BTree<number, Node> = new BTree();
 export const bTreeWayNodeGeohash: BTree<string, Node> = new BTree();
@@ -109,10 +114,15 @@ const main = () => {
             startGTreeCalculationNode.id,
             startGTreeCalculationNode
           );
+          NodesTable.wayNodes.insert(
+            startGTreeCalculationNode.id,
+            startGTreeCalculationNode
+          );
         }
 
         if (newGeoTreeNode) {
           geotree.insert(gTreeNode.id, gTreeNode);
+          NodesTable.wayNodes.insert(gTreeNode.id, gTreeNode);
         }
 
         // ovo je kad se ne brise
@@ -164,10 +174,15 @@ const main = () => {
             startGTreeCalculationNode.id,
             startGTreeCalculationNode
           );
+          NodesTable.wayNodes.insert(
+            startGTreeCalculationNode.id,
+            startGTreeCalculationNode
+          );
         }
 
         if (newGeoTreeNode) {
           geotree.insert(gTreeNode.id, gTreeNode);
+          NodesTable.wayNodes.insert(gTreeNode.id, gTreeNode);
         }
 
         startCalculationNode = node;
@@ -220,15 +235,49 @@ parse({
     bTreeNode.set(Number(node.id), node);
 
     if (
-      shouldStoreHistoric(node) ||
-      shouldStoreWaterway(node) ||
-      shouldStoreTourism(node)
+      nodeHelper.isHistoric(node) ||
+      nodeHelper.isWaterway(node) ||
+      nodeHelper.isTourism(node) ||
+      nodeHelper.isPlace(node)
     ) {
-      bTreeHistoric.set(node.tags.name, node);
+      bTreePOI.set(node.tags.name, node);
+      const geoHashId = geohash.encode(node.lat, node.lon, ENCODE);
+
+      NodesTable.poiNodes.insert(
+        geoHashId,
+        new GeoTreeNode({
+          id: geoHashId,
+          tags: node.tags,
+        })
+      );
     }
   },
   way: function (way: Way) {
-    if (isWayToStore(way)) {
+    if (
+      wayHelper.isHistoric(way) ||
+      wayHelper.isWaterway(way) ||
+      wayHelper.isTourism(way) ||
+      wayHelper.isPlace(way)
+    ) {
+      const { middleLat, middleLon } = wayHelper.findMiddleCoordinate(
+        way,
+        bTreeNode
+      );
+
+      const geoHashId = geohash.encode(middleLat, middleLon, ENCODE);
+
+      NodesTable.poiNodes.insert(
+        geoHashId,
+        new GeoTreeNode({
+          id: geoHashId,
+          tags: way.tags,
+        })
+      );
+
+      return;
+    }
+
+    if (wayHelper.isWayToStore(way)) {
       const newWay = new Way(way);
 
       createNodesForWay(newWay);

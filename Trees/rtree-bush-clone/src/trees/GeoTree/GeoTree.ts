@@ -15,20 +15,23 @@ import { GTree } from "../../flatbuffers/g-tree/g-tree";
 
 export class GeoTreeNode {
   id: string;
-  pointsTo: string[] | string[];
-  distance: number[];
-  linkCount: number;
+  pointsTo?: string[];
+  distance?: number[];
+  tags?: { [key: string]: any } | undefined;
+  linkCount?: number;
 
   constructor(node: {
     id: string;
-    pointsTo?: string[] | string[];
+    pointsTo?: string[];
     distance?: number[];
+    tags?: { [key: string]: any };
     linkCount?: number;
   }) {
     this.id = node.id;
-    this.pointsTo = node.pointsTo || [];
-    this.distance = node.distance || [];
-    this.linkCount = node.linkCount || 1;
+    this.pointsTo = node.pointsTo;
+    this.distance = node.distance;
+    this.linkCount = node.linkCount;
+    this.tags = node.tags;
   }
 }
 export class GeoTreeBox {
@@ -208,18 +211,25 @@ export class GeoTree {
 
         const gNodesArray = el.values.map((value) => {
           const id = builder.createString(value.id);
-          const distance = GTreeNode.createDistanceVector(
-            builder,
-            value.distance
-          );
-          const points = value.pointsTo.map((p) => builder.createString(p));
-          const pointsVector = GTreeNode.createPointsToVector(builder, points);
+          const distance = value.distance
+            ? GTreeNode.createDistanceVector(builder, value.distance)
+            : null;
+          const points = value.pointsTo
+            ? value.pointsTo.map((p) => builder.createString(p))
+            : null;
+          const pointsVector = points
+            ? GTreeNode.createPointsToVector(builder, points)
+            : null;
 
           GTreeNode.startGTreeNode(builder);
           GTreeNode.addId(builder, id);
-          GTreeNode.addDistance(builder, distance);
+          if (distance) {
+            GTreeNode.addDistance(builder, distance);
+          }
 
-          GTreeNode.addPointsTo(builder, pointsVector);
+          if (pointsVector) {
+            GTreeNode.addPointsTo(builder, pointsVector);
+          }
 
           return GTreeNode.endGTreeNode(builder);
         });
