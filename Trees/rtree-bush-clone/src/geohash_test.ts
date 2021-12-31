@@ -18,13 +18,20 @@ const ENCODE = 9;
 
 interface INodesTable {
   wayNodes: GeoTree;
+  placeNodes: GeoTree;
   poiNodes: GeoTree;
-  index: { places: BTree<number, any> };
+  index: {
+    streets: BTree<string, any>;
+    places: BTree<string, any>;
+    pois: BTree<string, any>;
+  };
 }
+
 const NodesTable: INodesTable = {
   wayNodes: new GeoTree(ENCODE),
   poiNodes: new GeoTree(ENCODE),
-  index: { places: new BTree() },
+  placeNodes: new GeoTree(ENCODE),
+  index: { pois: new BTree(), places: new BTree(), streets: new BTree() },
 };
 
 const geotree: GeoTree = new GeoTree(ENCODE);
@@ -234,30 +241,48 @@ parse({
   node: function (node: any) {
     bTreeNode.set(Number(node.id), node);
 
+    if (wayHelper.isStreetAddress(node)) {
+      console.log(node);
+    }
+
     if (
       nodeHelper.isHistoric(node) ||
       nodeHelper.isWaterway(node) ||
-      nodeHelper.isTourism(node) ||
-      nodeHelper.isPlace(node)
+      nodeHelper.isTourism(node)
     ) {
       bTreePOI.set(node.tags.name, node);
       const geoHashId = geohash.encode(node.lat, node.lon, ENCODE);
 
-      NodesTable.poiNodes.insert(
-        geoHashId,
-        new GeoTreeNode({
-          id: geoHashId,
-          tags: node.tags,
-        })
-      );
+      const geoHashNode = new GeoTreeNode({
+        id: geoHashId,
+        tags: node.tags,
+      });
+
+      NodesTable.poiNodes.insert(geoHashId, geoHashNode);
+
+      NodesTable.index.pois.set(node.tags.name, geoHashNode);
+    }
+
+    if (nodeHelper.isPlace(node)) {
+      bTreePOI.set(node.tags.name, node);
+      const geoHashId = geohash.encode(node.lat, node.lon, ENCODE);
+      const geoHashNode = new GeoTreeNode({
+        id: geoHashId,
+        tags: node.tags,
+      });
+      NodesTable.placeNodes.insert(geoHashId, geoHashNode);
+      NodesTable.index.places.set(node.tags.name, geoHashNode);
     }
   },
   way: function (way: Way) {
+    // if (wayHelper.isStreetAddress(way)) {
+    //   console.log(way);
+    // }
+
     if (
       wayHelper.isHistoric(way) ||
       wayHelper.isWaterway(way) ||
-      wayHelper.isTourism(way) ||
-      wayHelper.isPlace(way)
+      wayHelper.isTourism(way)
     ) {
       const { middleLat, middleLon } = wayHelper.findMiddleCoordinate(
         way,
@@ -265,19 +290,31 @@ parse({
       );
 
       const geoHashId = geohash.encode(middleLat, middleLon, ENCODE);
+      const geoHashNode = new GeoTreeNode({
+        id: geoHashId,
+        tags: way.tags,
+      });
 
-      NodesTable.poiNodes.insert(
-        geoHashId,
-        new GeoTreeNode({
-          id: geoHashId,
-          tags: way.tags,
-        })
-      );
-
-      return;
+      NodesTable.poiNodes.insert(geoHashId, geoHashNode);
+      NodesTable.index.pois.set(way.tags.name, geoHashNode);
     }
 
-    if (wayHelper.isWayToStore(way)) {
+    if (wayHelper.isPlace(way)) {
+      const { middleLat, middleLon } = wayHelper.findMiddleCoordinate(
+        way,
+        bTreeNode
+      );
+
+      const geoHashId = geohash.encode(middleLat, middleLon, ENCODE);
+      const geoHashNode = new GeoTreeNode({
+        id: geoHashId,
+        tags: way.tags,
+      });
+      NodesTable.placeNodes.insert(geoHashId, geoHashNode);
+      NodesTable.index.places.set(way.tags.name, geoHashNode);
+    }
+
+    if (wayHelper.isRoadToStore(way)) {
       const newWay = new Way(way);
 
       createNodesForWay(newWay);

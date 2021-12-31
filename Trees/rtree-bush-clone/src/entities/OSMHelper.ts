@@ -31,6 +31,19 @@ export class OSMHelper {
     return false;
   }
 
+  isStreetAddress(node: Node | Way): boolean {
+    // https://wiki.openstreetmap.org/wiki/Key:place
+    if (
+      node.tags &&
+      node.tags["addr:housenumber"] &&
+      node.tags["addr:street"]
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
   isTourism(node: Node | Way): boolean {
     if (node.tags?.tourism && node.tags?.name) {
       return true;

@@ -2,12 +2,12 @@ import Btree from "../trees/Btree";
 import { Way } from "../trees/Way";
 import { OSMHelper } from "./OSMHelper";
 
-interface IWayHelper {
+interface IWayHelper extends OSMHelper {
   findMiddleCoordinate(
     way: Way,
     bTreeNode: Btree
   ): { middleLat: number; middleLon: number };
-  isWayToStore(way: any): boolean;
+  isRoadToStore(way: any): boolean;
 }
 
 export class WayHelper extends OSMHelper implements IWayHelper {
@@ -46,7 +46,7 @@ export class WayHelper extends OSMHelper implements IWayHelper {
     };
   }
 
-  isWayToStore(way: any) {
+  isRoadToStore(way: any) {
     return (
       way.tags.highway &&
       (way.tags.highway === "motorway" ||
@@ -61,6 +61,7 @@ export class WayHelper extends OSMHelper implements IWayHelper {
         way.tags.highway === "secondary_link" ||
         way.tags.highway === "tertiary_link" ||
         way.tags.highway === "service" ||
+        // way.tags.highway === "footway" ||
         way.tags.highway === "secondary")
     );
   }
