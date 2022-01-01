@@ -4,9 +4,8 @@ import BTree from "./Btree";
 import * as Schema from "../../proto/nodesBtree_pb";
 import { Way } from "../Way";
 import { Node } from "../Node";
-import { BTreeNode } from "../../flatbuffers/map/node/b-tree-node";
 import { Builder } from "flatbuffers";
-import { BTreeLeafNode } from "../../flatbuffers/map/node/b-tree-leaf-node";
+import { BTreeNode } from "../../flatbuffers/geo-table/b-tree-node";
 
 /** Leaf node / base class. **************************************************/
 export class BNode<K, V> {
@@ -44,57 +43,63 @@ export class BNode<K, V> {
   }
 
   storeNodeToLeaf(builder: Builder) {
-    const vals = (this.values as unknown as Node[]).map((node: Node) => {
-      let distance =
-        node.distance && node.distance.length
-          ? BTreeLeafNode.createDistanceVector(builder, node.distance)
-          : null;
+    // const vals = (this.values as unknown as Node[]).map((node: Node) => {
+    //   let distance =
+    //     node.distance && node.distance.length
+    //       ? BTreeLeafNode.createDistanceVector(builder, node.distance)
+    //       : null;
+    //   let pointsToNums = (node.pointsTo || []).map((node, index) => {
+    //     return Number((node as Node).id || (node as string));
+    //   });
+    //   let pointsTo = null;
+    //   if (node.pointsTo && node.pointsTo.length) {
+    //     pointsTo = BTreeLeafNode.createPointsToVector(builder, pointsToNums);
+    //   }
+    //   const partOfWayNums = (node.partOfWays || []).map((w, index) => {
+    //     return Number(w.id);
+    //   });
+    //   let partOfWays = null;
+    //   if (partOfWayNums && partOfWayNums.length) {
+    //     partOfWays = BTreeLeafNode.createPartOfWaysVector(
+    //       builder,
+    //       partOfWayNums
+    //     );
+    //   }
+    //   BTreeLeafNode.startBTreeLeafNode(builder);
+    //   BTreeLeafNode.addId(builder, Number(node.id));
+    //   if (node.lat) BTreeLeafNode.addLat(builder, node.lat);
+    //   if (node.lon) BTreeLeafNode.addLon(builder, node.lon);
+    //   if (distance) {
+    //     BTreeLeafNode.addDistance(builder, distance);
+    //   }
+    //   if (pointsTo) {
+    //     BTreeLeafNode.addPointsTo(builder, pointsTo);
+    //   }
+    //   if (partOfWays) {
+    //     BTreeLeafNode.addPartOfWays(builder, partOfWays);
+    //   }
+    //   const protoNode = BTreeLeafNode.endBTreeLeafNode(builder);
+    //   // for (const [key, value] of Object.entries(node.tags || {})) {
+    //   //   protoNode.getTagsMap().set(key, value);
+    //   // }
+    //   return protoNode;
+    // });
+    // const values = BTreeNode.createValuesVector(builder, vals);
+    // const keysNums = this.keys.map((key) => Number(key));
+    // const keys = BTreeNode.createKeysVector(builder, keysNums);
+    // BTreeNode.startBTreeNode(builder);
+    // BTreeNode.addKeys(builder, keys);
+    // BTreeNode.addValues(builder, values);
+    // const leaf = BTreeNode.endBTreeNode(builder);
+    // builder.finish(leaf);
+    // return leaf;
+  }
 
-      let pointsToNums = (node.pointsTo || []).map((node, index) => {
-        return Number((node as Node).id || (node as string));
-      });
-
-      let pointsTo = null;
-      if (node.pointsTo && node.pointsTo.length) {
-        pointsTo = BTreeLeafNode.createPointsToVector(builder, pointsToNums);
-      }
-
-      const partOfWayNums = (node.partOfWays || []).map((w, index) => {
-        return Number(w.id);
-      });
-
-      let partOfWays = null;
-
-      if (partOfWayNums && partOfWayNums.length) {
-        partOfWays = BTreeLeafNode.createPartOfWaysVector(
-          builder,
-          partOfWayNums
-        );
-      }
-
-      BTreeLeafNode.startBTreeLeafNode(builder);
-      BTreeLeafNode.addId(builder, Number(node.id));
-      if (node.lat) BTreeLeafNode.addLat(builder, node.lat);
-      if (node.lon) BTreeLeafNode.addLon(builder, node.lon);
-      if (distance) {
-        BTreeLeafNode.addDistance(builder, distance);
-      }
-      if (pointsTo) {
-        BTreeLeafNode.addPointsTo(builder, pointsTo);
-      }
-      if (partOfWays) {
-        BTreeLeafNode.addPartOfWays(builder, partOfWays);
-      }
-      const protoNode = BTreeLeafNode.endBTreeLeafNode(builder);
-      // for (const [key, value] of Object.entries(node.tags || {})) {
-      //   protoNode.getTagsMap().set(key, value);
-      // }
-
-      return protoNode;
-    });
+  storeIndexToLeaf(builder: Builder) {
+    const vals = this.values as unknown as number[];
 
     const values = BTreeNode.createValuesVector(builder, vals);
-    const keysNums = this.keys.map((key) => Number(key));
+    const keysNums = this.keys.map((key) => builder.createString(String(key)));
     const keys = BTreeNode.createKeysVector(builder, keysNums);
 
     BTreeNode.startBTreeNode(builder);
@@ -108,6 +113,9 @@ export class BNode<K, V> {
 
   storeWayTo(internalNode: Schema.BTreeWayNode) {}
   storeNodeTo(builder: Builder) {
+    return 0;
+  }
+  storeIndexTo(builder: Builder) {
     return 0;
   }
 

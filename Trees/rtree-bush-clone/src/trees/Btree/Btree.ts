@@ -22,8 +22,7 @@ import { BNodeInternal } from "./BtreeNodeInternal";
 import { ISortedMap, ISortedMapF } from "./interfaces";
 import { Node } from "../Node";
 import { Way } from "../Way";
-import { BNodesTree } from "../../flatbuffers/map/node/b-nodes-tree";
-import { BTreeNode } from "../../flatbuffers/map/node/b-tree-node";
+import { BNodesTree } from "../../flatbuffers/geo-table/b-nodes-tree";
 /**
  * A reasonably fast collection of key-value pairs with a powerful API.
  * Largely compatible with the standard Map. BTree is a B+ tree data structure,
@@ -157,6 +156,23 @@ export default class BTree<K = any, V = any>
     const serializedBytes = builder.asUint8Array();
 
     fs.writeFileSync(filePath, serializedBytes, "binary");
+  }
+
+  createIndexForFlat(builder: Builder) {
+    console.log("rootNode");
+
+    const rootNode = this._root.storeIndexTo(builder);
+
+    BNodesTree.startBNodesTree(builder);
+
+    // store root to protobuf
+    BNodesTree.addRoot(builder, rootNode);
+    BNodesTree.addSize(builder, this._size);
+    BNodesTree.addMaxNodeSize(builder, this._maxNodeSize);
+
+    const bTreeIndex = BNodesTree.endBNodesTree(builder);
+
+    return bTreeIndex;
   }
 
   storeProtoNodesToFile(filePath: string) {

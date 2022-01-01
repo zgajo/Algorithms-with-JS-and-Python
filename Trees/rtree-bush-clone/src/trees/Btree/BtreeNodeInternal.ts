@@ -2,8 +2,8 @@ import { check, EditRangeResult, index } from ".";
 import BTree from "./Btree";
 import { BNode } from "./BtreeNode";
 import * as Schema from "../../proto/nodesBtree_pb";
-import { BTreeNode } from "../../flatbuffers/map/node/b-tree-node";
 import { Builder } from "flatbuffers";
+import { BTreeNode } from "../../flatbuffers/geo-table/b-tree-node";
 
 /** Internal node (non-leaf node) ********************************************/
 export class BNodeInternal<K, V> extends BNode<K, V> {
@@ -48,8 +48,33 @@ export class BNodeInternal<K, V> extends BNode<K, V> {
       }
     });
 
-    const children = BTreeNode.createChildrenVector(builder, childs);
+    const children = BTreeNode.createChildrenVector(builder, childs as []);
     const keyNums = this.keys.map((key) => Number(key));
+    const keys = BTreeNode.createKeysVector(builder, keyNums);
+
+    BTreeNode.startBTreeNode(builder);
+    BTreeNode.addChildren(builder, children);
+    BTreeNode.addKeys(builder, keys);
+
+    const internalN = BTreeNode.endBTreeNode(builder);
+
+    builder.finish(internalN);
+
+    return internalN;
+  }
+
+  storeIndexTo(builder: Builder, rootNode?: boolean) {
+    const childs = this.children.map((node) => {
+      // leaf node
+      if (node.isLeaf) {
+        return node.storeIndexToLeaf(builder);
+      } else {
+        return node.storeIndexTo(builder);
+      }
+    });
+
+    const children = BTreeNode.createChildrenVector(builder, childs);
+    const keyNums = this.keys.map((key) => builder.createString(String(key)));
     const keys = BTreeNode.createKeysVector(builder, keyNums);
 
     BTreeNode.startBTreeNode(builder);

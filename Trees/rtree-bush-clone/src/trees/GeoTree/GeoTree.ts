@@ -12,6 +12,10 @@ import {
 } from "../../utils/helper";
 import { GTreeBox } from "../../flatbuffers/g-tree/g-tree-box";
 import { GTree } from "../../flatbuffers/g-tree/g-tree";
+import BTree from "../Btree";
+import { NodesTable } from "../../flatbuffers/geo-table/nodes-table";
+
+export const indexPlaces: BTree<string, number> = new BTree();
 
 export class GeoTreeNode {
   id: string;
@@ -195,9 +199,18 @@ export class GeoTree {
     GTree.startGTree(builder);
     GTree.addData(builder, preparedDataV);
     GTree.addPrecision(builder, this.precision);
-    const root = GTree.endGTree(builder);
+    const placeNodes = GTree.endGTree(builder);
 
-    builder.finish(root);
+    const placeIndex = indexPlaces.createIndexForFlat(builder);
+
+    NodesTable.startNodesTable(builder);
+
+    NodesTable.addPlaceNodes(builder, placeNodes);
+    NodesTable.addIndexPlaces(builder, placeIndex);
+
+    const nodesTable = NodesTable.endNodesTable(builder);
+
+    builder.finish(nodesTable);
 
     const serializedBytes = builder.asUint8Array();
 
@@ -231,7 +244,13 @@ export class GeoTree {
             GTreeNode.addPointsTo(builder, pointsVector);
           }
 
-          return GTreeNode.endGTreeNode(builder);
+          const gTreeNode = GTreeNode.endGTreeNode(builder);
+
+          if (value.tags?.name) {
+            indexPlaces.set(value.tags?.name, gTreeNode);
+          }
+
+          return gTreeNode;
         });
 
         const key = builder.createString(el.key);
