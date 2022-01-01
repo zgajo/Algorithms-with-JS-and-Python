@@ -4,18 +4,15 @@ import * as path from "path";
 import { Builder, ByteBuffer } from "flatbuffers";
 import * as fs from "fs";
 
-import { GTreeNode } from "../../flatbuffers/g-tree/g-tree-node";
-
 import {
   degreesToRadians,
   distanceInKmBetweenEarthCoordinates,
 } from "../../utils/helper";
-import { GTreeBox } from "../../flatbuffers/g-tree/g-tree-box";
-import { GTree } from "../../flatbuffers/g-tree/g-tree";
 import BTree from "../Btree";
 import { NodesTable } from "../../flatbuffers/geo-table/nodes-table";
-
-export const indexPlaces: BTree<string, number> = new BTree();
+import { GTree } from "../../flatbuffers/geo-table/g-tree";
+import { GTreeNode } from "../../flatbuffers/geo-table/g-tree-node";
+import { GTreeBox } from "../../flatbuffers/geo-table/g-tree-box";
 
 export class GeoTreeNode {
   id: string;
@@ -89,10 +86,12 @@ export class GeoTreeBox {
 export class GeoTree {
   precision: number;
   data: GeoTreeBox[];
+  index: BTree<string, number> | null;
 
   constructor(precision?: number) {
     this.precision = precision || 10;
     this.data = [];
+    this.index = null;
   }
 
   insert(geohash: string, node: GeoTreeNode, geolevel = 0) {
@@ -190,31 +189,24 @@ export class GeoTree {
     })?.values;
   }
 
-  storeToTheFile(filePath: string) {
-    var builder = new Builder(1024);
+  prepareIndex() {
+    this.index = new BTree();
 
+    return this;
+  }
+
+  generateDataStructures(builder: Builder) {
     const preparedData = this.prepareForFileStorage(this.data, builder);
     const preparedDataV = GTree.createDataVector(builder, preparedData);
 
     GTree.startGTree(builder);
     GTree.addData(builder, preparedDataV);
     GTree.addPrecision(builder, this.precision);
-    const placeNodes = GTree.endGTree(builder);
+    const nodes = GTree.endGTree(builder);
 
-    const placeIndex = indexPlaces.createIndexForFlat(builder);
+    const index = this.index ? this.index.createIndexForFlat(builder) : null;
 
-    NodesTable.startNodesTable(builder);
-
-    NodesTable.addPlaceNodes(builder, placeNodes);
-    NodesTable.addIndexPlaces(builder, placeIndex);
-
-    const nodesTable = NodesTable.endNodesTable(builder);
-
-    builder.finish(nodesTable);
-
-    const serializedBytes = builder.asUint8Array();
-
-    fs.writeFileSync(filePath, serializedBytes, "binary");
+    return { nodes, index };
   }
 
   prepareForFileStorage(data: GeoTreeBox[], builder: Builder) {
@@ -233,6 +225,9 @@ export class GeoTree {
           const pointsVector = points
             ? GTreeNode.createPointsToVector(builder, points)
             : null;
+          const tags = value.tags
+            ? builder.createString(JSON.stringify(value.tags))
+            : null;
 
           GTreeNode.startGTreeNode(builder);
           GTreeNode.addId(builder, id);
@@ -244,10 +239,14 @@ export class GeoTree {
             GTreeNode.addPointsTo(builder, pointsVector);
           }
 
+          if (tags) {
+            GTreeNode.addTags(builder, tags);
+          }
+
           const gTreeNode = GTreeNode.endGTreeNode(builder);
 
-          if (value.tags?.name) {
-            indexPlaces.set(value.tags?.name, gTreeNode);
+          if (value.tags?.name && this.index) {
+            this.index.set(value.tags?.name, gTreeNode);
           }
 
           return gTreeNode;
@@ -278,15 +277,3 @@ export class GeoTree {
     });
   }
 }
-
-const tree = new GeoTree(5);
-
-tree.insert("aabbs", new GeoTreeNode({ id: "aabbs" }));
-tree.insert("aabaa", new GeoTreeNode({ id: "aabba" }));
-tree.insert("aabba", new GeoTreeNode({ id: "aabba" }));
-
-const node = tree.getNode("aabba");
-
-tree.storeToTheFile(path.join(__dirname, "GTest.bin"));
-
-console.log(node);

@@ -6,12 +6,12 @@ import { NodeHelper } from "./entities/NodeHelper";
 import { WayHelper } from "./entities/WayHelper";
 import { haversine } from "./graph/aStar2";
 import BTree from "./trees/Btree";
-import { GeoTree, GeoTreeNode, indexPlaces } from "./trees/GeoTree/GeoTree";
+import { GeoTree, GeoTreeNode } from "./trees/GeoTree/GeoTree";
 import { Node } from "./trees/Node";
 import { Way } from "./trees/Way";
 import { COUNTRY } from "./utils/constants";
 import { connectGeotreeNodesInWay } from "./utils/helper";
-import { ByteBuffer } from "flatbuffers";
+import { Builder, ByteBuffer } from "flatbuffers";
 import { NodesTable } from "./flatbuffers/geo-table/nodes-table";
 
 const wayHelper = new WayHelper();
@@ -43,7 +43,7 @@ const bTreePOI = new BTree();
 export const bTreeWay: BTree<number, Way> = new BTree();
 export const bTreeWayNode: BTree<number, Node> = new BTree();
 export const bTreeWayNodeGeohash: BTree<string, Node> = new BTree();
-
+console.time("kreiranje karte");
 const createNodesForWay = (newWay: Way) => {
   newWay.nodeRefs.forEach((element: string) => {
     const node = bTreeWayNode.get(Number(element));
@@ -221,23 +221,38 @@ const main = () => {
   // console.timeEnd("astar 3");
   const storePath = path.join(__dirname, COUNTRY + "GtreeNodes.bin");
 
-  NodesTbl.placeNodes.storeToTheFile(storePath);
+  var builder = new Builder(1024);
+  const { index: placeIndex, nodes: placeNodes } = NodesTbl.placeNodes
+    .prepareIndex()
+    .generateDataStructures(builder);
+  const { index: poiIndex, nodes: poiNodes } = NodesTbl.poiNodes
+    .prepareIndex()
+    .generateDataStructures(builder);
+  const { nodes: wayNodes } = NodesTbl.wayNodes.generateDataStructures(builder);
 
-  var bytes = new Uint8Array(fs.readFileSync(storePath));
+  NodesTable.startNodesTable(builder);
 
-  var buff = new ByteBuffer(bytes);
+  NodesTable.addWayNodes(builder, wayNodes);
 
-  const nodesTable = NodesTable.getRootAsNodesTable(buff);
-  let position = 0;
-  const length =
-    nodesTable.indexPlaces()?.root()?.children(0)?.keysLength() || 0;
-
-  while (position < length) {
-    // console.log(nodesTable.indexPlaces()?.root()?.children(0)?.keys(position));
-    ++position;
+  NodesTable.addPlaceNodes(builder, placeNodes);
+  if (placeIndex) {
+    NodesTable.addIndexPlaces(builder, placeIndex);
   }
 
-  console.log(nodesTable.indexPlaces()?.root()?.children(0)?.values(0)?.id());
+  NodesTable.addPoiNodes(builder, poiNodes);
+  if (poiIndex) {
+    NodesTable.addIndexPlaces(builder, poiIndex);
+  }
+
+  const nodesTable = NodesTable.endNodesTable(builder);
+
+  builder.finish(nodesTable);
+
+  const serializedBytes = builder.asUint8Array();
+
+  fs.writeFileSync(storePath, serializedBytes, "binary");
+  console.timeEnd("kreiranje karte");
+
   // console.time("astar 4");
 
   // new AStar4(path.join(__dirname, COUNTRY + "GtreeWayNodes.bin")).search(

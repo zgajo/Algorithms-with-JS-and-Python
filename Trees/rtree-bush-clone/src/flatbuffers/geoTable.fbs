@@ -30,6 +30,7 @@ table GTreeNode {
   id: string;
   points_to: [string];
   distance: [short];
+  tags: string;
 }
 
 table GTreeBox {
@@ -44,6 +45,7 @@ table GTree {
 }
 
 table NodesTable {
+  way_nodes: GTree;
   place_nodes: GTree;
   poi_nodes: GTree;
   index_places: BNodesTree;

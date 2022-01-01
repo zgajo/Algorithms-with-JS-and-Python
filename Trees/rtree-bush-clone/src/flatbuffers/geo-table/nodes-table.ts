@@ -24,44 +24,53 @@ static getSizePrefixedRootAsNodesTable(bb:flatbuffers.ByteBuffer, obj?:NodesTabl
   return (obj || new NodesTable()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-placeNodes(obj?:GTree):GTree|null {
+wayNodes(obj?:GTree):GTree|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new GTree()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
-poiNodes(obj?:GTree):GTree|null {
+placeNodes(obj?:GTree):GTree|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? (obj || new GTree()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
-indexPlaces(obj?:BNodesTree):BNodesTree|null {
+poiNodes(obj?:GTree):GTree|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
-  return offset ? (obj || new BNodesTree()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+  return offset ? (obj || new GTree()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
-indexPois(obj?:BNodesTree):BNodesTree|null {
+indexPlaces(obj?:BNodesTree):BNodesTree|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? (obj || new BNodesTree()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
+indexPois(obj?:BNodesTree):BNodesTree|null {
+  const offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? (obj || new BNodesTree()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+}
+
 static startNodesTable(builder:flatbuffers.Builder) {
-  builder.startObject(4);
+  builder.startObject(5);
+}
+
+static addWayNodes(builder:flatbuffers.Builder, wayNodesOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, wayNodesOffset, 0);
 }
 
 static addPlaceNodes(builder:flatbuffers.Builder, placeNodesOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(0, placeNodesOffset, 0);
+  builder.addFieldOffset(1, placeNodesOffset, 0);
 }
 
 static addPoiNodes(builder:flatbuffers.Builder, poiNodesOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(1, poiNodesOffset, 0);
+  builder.addFieldOffset(2, poiNodesOffset, 0);
 }
 
 static addIndexPlaces(builder:flatbuffers.Builder, indexPlacesOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(2, indexPlacesOffset, 0);
+  builder.addFieldOffset(3, indexPlacesOffset, 0);
 }
 
 static addIndexPois(builder:flatbuffers.Builder, indexPoisOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(3, indexPoisOffset, 0);
+  builder.addFieldOffset(4, indexPoisOffset, 0);
 }
 
 static endNodesTable(builder:flatbuffers.Builder):flatbuffers.Offset {

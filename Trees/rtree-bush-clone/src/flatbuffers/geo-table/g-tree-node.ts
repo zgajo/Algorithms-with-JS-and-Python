@@ -54,8 +54,15 @@ distanceArray():Int16Array|null {
   return offset ? new Int16Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
 
+tags():string|null
+tags(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+tags(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
 static startGTreeNode(builder:flatbuffers.Builder) {
-  builder.startObject(3);
+  builder.startObject(4);
 }
 
 static addId(builder:flatbuffers.Builder, idOffset:flatbuffers.Offset) {
@@ -99,16 +106,21 @@ static startDistanceVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(2, numElems, 2);
 }
 
+static addTags(builder:flatbuffers.Builder, tagsOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(3, tagsOffset, 0);
+}
+
 static endGTreeNode(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
 }
 
-static createGTreeNode(builder:flatbuffers.Builder, idOffset:flatbuffers.Offset, pointsToOffset:flatbuffers.Offset, distanceOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createGTreeNode(builder:flatbuffers.Builder, idOffset:flatbuffers.Offset, pointsToOffset:flatbuffers.Offset, distanceOffset:flatbuffers.Offset, tagsOffset:flatbuffers.Offset):flatbuffers.Offset {
   GTreeNode.startGTreeNode(builder);
   GTreeNode.addId(builder, idOffset);
   GTreeNode.addPointsTo(builder, pointsToOffset);
   GTreeNode.addDistance(builder, distanceOffset);
+  GTreeNode.addTags(builder, tagsOffset);
   return GTreeNode.endGTreeNode(builder);
 }
 }
