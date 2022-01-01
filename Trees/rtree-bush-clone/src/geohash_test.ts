@@ -1,22 +1,25 @@
 import geohash from "ngeohash";
+import * as fs from "fs";
 import { parse } from "osm-read";
 import * as path from "path";
 import { NodeHelper } from "./entities/NodeHelper";
 import { WayHelper } from "./entities/WayHelper";
 import { haversine } from "./graph/aStar2";
 import BTree from "./trees/Btree";
-import { GeoTree, GeoTreeNode } from "./trees/GeoTree/GeoTree";
+import { GeoTree, GeoTreeNode, indexPlaces } from "./trees/GeoTree/GeoTree";
 import { Node } from "./trees/Node";
 import { Way } from "./trees/Way";
 import { COUNTRY } from "./utils/constants";
 import { connectGeotreeNodesInWay } from "./utils/helper";
+import { ByteBuffer } from "flatbuffers";
+import { NodesTable } from "./flatbuffers/geo-table/nodes-table";
 
 const wayHelper = new WayHelper();
 const nodeHelper = new NodeHelper();
 
 const ENCODE = 9;
 
-interface INodesTable {
+interface INodesTbl {
   wayNodes: GeoTree;
   placeNodes: GeoTree;
   poiNodes: GeoTree;
@@ -27,7 +30,7 @@ interface INodesTable {
   };
 }
 
-const NodesTable: INodesTable = {
+const NodesTbl: INodesTbl = {
   wayNodes: new GeoTree(ENCODE),
   poiNodes: new GeoTree(ENCODE),
   placeNodes: new GeoTree(ENCODE),
@@ -121,7 +124,7 @@ const main = () => {
             startGTreeCalculationNode.id,
             startGTreeCalculationNode
           );
-          NodesTable.wayNodes.insert(
+          NodesTbl.wayNodes.insert(
             startGTreeCalculationNode.id,
             startGTreeCalculationNode
           );
@@ -129,7 +132,7 @@ const main = () => {
 
         if (newGeoTreeNode) {
           geotree.insert(gTreeNode.id, gTreeNode);
-          NodesTable.wayNodes.insert(gTreeNode.id, gTreeNode);
+          NodesTbl.wayNodes.insert(gTreeNode.id, gTreeNode);
         }
 
         // ovo je kad se ne brise
@@ -181,7 +184,7 @@ const main = () => {
             startGTreeCalculationNode.id,
             startGTreeCalculationNode
           );
-          NodesTable.wayNodes.insert(
+          NodesTbl.wayNodes.insert(
             startGTreeCalculationNode.id,
             startGTreeCalculationNode
           );
@@ -189,7 +192,7 @@ const main = () => {
 
         if (newGeoTreeNode) {
           geotree.insert(gTreeNode.id, gTreeNode);
-          NodesTable.wayNodes.insert(gTreeNode.id, gTreeNode);
+          NodesTbl.wayNodes.insert(gTreeNode.id, gTreeNode);
         }
 
         startCalculationNode = node;
@@ -216,8 +219,25 @@ const main = () => {
   //   // bTreeWayNode.get("748833076") as Node
   // );
   // console.timeEnd("astar 3");
+  const storePath = path.join(__dirname, COUNTRY + "GtreeNodes.bin");
 
-  geotree.storeToTheFile(path.join(__dirname, COUNTRY + "GtreeWayNodes.bin"));
+  NodesTbl.placeNodes.storeToTheFile(storePath);
+
+  var bytes = new Uint8Array(fs.readFileSync(storePath));
+
+  var buff = new ByteBuffer(bytes);
+
+  const nodesTable = NodesTable.getRootAsNodesTable(buff);
+  let position = 0;
+  const length =
+    nodesTable.indexPlaces()?.root()?.children(0)?.keysLength() || 0;
+
+  while (position < length) {
+    // console.log(nodesTable.indexPlaces()?.root()?.children(0)?.keys(position));
+    ++position;
+  }
+
+  console.log(nodesTable.indexPlaces()?.root()?.children(0)?.values(0)?.id());
   // console.time("astar 4");
 
   // new AStar4(path.join(__dirname, COUNTRY + "GtreeWayNodes.bin")).search(
@@ -228,7 +248,6 @@ const main = () => {
   // console.timeEnd("astar 4");
 
   // bTreeLoad.loadNodesFromFile(path.join(__dirname, "BtreeNodes.bin"));
-  console.log(geotree);
 };
 
 parse({
@@ -242,7 +261,6 @@ parse({
     bTreeNode.set(Number(node.id), node);
 
     if (wayHelper.isStreetAddress(node)) {
-      console.log(node);
     }
 
     if (
@@ -258,9 +276,9 @@ parse({
         tags: node.tags,
       });
 
-      NodesTable.poiNodes.insert(geoHashId, geoHashNode);
+      NodesTbl.poiNodes.insert(geoHashId, geoHashNode);
 
-      NodesTable.index.pois.set(node.tags.name, geoHashNode);
+      NodesTbl.index.pois.set(node.tags.name, geoHashNode);
     }
 
     if (nodeHelper.isPlace(node)) {
@@ -270,8 +288,8 @@ parse({
         id: geoHashId,
         tags: node.tags,
       });
-      NodesTable.placeNodes.insert(geoHashId, geoHashNode);
-      NodesTable.index.places.set(node.tags.name, geoHashNode);
+      NodesTbl.placeNodes.insert(geoHashId, geoHashNode);
+      NodesTbl.index.places.set(node.tags.name, geoHashNode);
     }
   },
   way: function (way: Way) {
@@ -295,8 +313,8 @@ parse({
         tags: way.tags,
       });
 
-      NodesTable.poiNodes.insert(geoHashId, geoHashNode);
-      NodesTable.index.pois.set(way.tags.name, geoHashNode);
+      NodesTbl.poiNodes.insert(geoHashId, geoHashNode);
+      NodesTbl.index.pois.set(way.tags.name, geoHashNode);
     }
 
     if (wayHelper.isPlace(way)) {
@@ -310,8 +328,8 @@ parse({
         id: geoHashId,
         tags: way.tags,
       });
-      NodesTable.placeNodes.insert(geoHashId, geoHashNode);
-      NodesTable.index.places.set(way.tags.name, geoHashNode);
+      NodesTbl.placeNodes.insert(geoHashId, geoHashNode);
+      NodesTbl.index.places.set(way.tags.name, geoHashNode);
     }
 
     if (wayHelper.isRoadToStore(way)) {
