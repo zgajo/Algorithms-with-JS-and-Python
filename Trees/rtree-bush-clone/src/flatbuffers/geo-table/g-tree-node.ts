@@ -2,22 +2,22 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-export class GeoTreeNode {
+export class GTreeNode {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
-__init(i:number, bb:flatbuffers.ByteBuffer):GeoTreeNode {
+__init(i:number, bb:flatbuffers.ByteBuffer):GTreeNode {
   this.bb_pos = i;
   this.bb = bb;
   return this;
 }
 
-static getRootAsGeoTreeNode(bb:flatbuffers.ByteBuffer, obj?:GeoTreeNode):GeoTreeNode {
-  return (obj || new GeoTreeNode()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+static getRootAsGTreeNode(bb:flatbuffers.ByteBuffer, obj?:GTreeNode):GTreeNode {
+  return (obj || new GTreeNode()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-static getSizePrefixedRootAsGeoTreeNode(bb:flatbuffers.ByteBuffer, obj?:GeoTreeNode):GeoTreeNode {
+static getSizePrefixedRootAsGTreeNode(bb:flatbuffers.ByteBuffer, obj?:GTreeNode):GTreeNode {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-  return (obj || new GeoTreeNode()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+  return (obj || new GTreeNode()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
 id():string|null
@@ -54,7 +54,7 @@ distanceArray():Int16Array|null {
   return offset ? new Int16Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
 }
 
-static startGeoTreeNode(builder:flatbuffers.Builder) {
+static startGTreeNode(builder:flatbuffers.Builder) {
   builder.startObject(3);
 }
 
@@ -99,16 +99,16 @@ static startDistanceVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(2, numElems, 2);
 }
 
-static endGeoTreeNode(builder:flatbuffers.Builder):flatbuffers.Offset {
+static endGTreeNode(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
 }
 
-static createGeoTreeNode(builder:flatbuffers.Builder, idOffset:flatbuffers.Offset, pointsToOffset:flatbuffers.Offset, distanceOffset:flatbuffers.Offset):flatbuffers.Offset {
-  GeoTreeNode.startGeoTreeNode(builder);
-  GeoTreeNode.addId(builder, idOffset);
-  GeoTreeNode.addPointsTo(builder, pointsToOffset);
-  GeoTreeNode.addDistance(builder, distanceOffset);
-  return GeoTreeNode.endGeoTreeNode(builder);
+static createGTreeNode(builder:flatbuffers.Builder, idOffset:flatbuffers.Offset, pointsToOffset:flatbuffers.Offset, distanceOffset:flatbuffers.Offset):flatbuffers.Offset {
+  GTreeNode.startGTreeNode(builder);
+  GTreeNode.addId(builder, idOffset);
+  GTreeNode.addPointsTo(builder, pointsToOffset);
+  GTreeNode.addDistance(builder, distanceOffset);
+  return GTreeNode.endGTreeNode(builder);
 }
 }

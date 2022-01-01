@@ -2,7 +2,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { BTreeNode } from '../../map/node/b-tree-node';
+import { BTreeNode } from '../geo-table/b-tree-node';
 
 
 export class BNodesTree {
@@ -79,14 +79,6 @@ static addRoot(builder:flatbuffers.Builder, rootOffset:flatbuffers.Offset) {
 static endBNodesTree(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
-}
-
-static finishBNodesTreeBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset);
-}
-
-static finishSizePrefixedBNodesTreeBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset, undefined, true);
 }
 
 }

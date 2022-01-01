@@ -2,25 +2,25 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { GeoTreeNode } from '../geo-tree/geo-tree-node';
+import { GTreeNode } from '../geo-table/g-tree-node';
 
 
-export class GeoTreeBox {
+export class GTreeBox {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
-__init(i:number, bb:flatbuffers.ByteBuffer):GeoTreeBox {
+__init(i:number, bb:flatbuffers.ByteBuffer):GTreeBox {
   this.bb_pos = i;
   this.bb = bb;
   return this;
 }
 
-static getRootAsGeoTreeBox(bb:flatbuffers.ByteBuffer, obj?:GeoTreeBox):GeoTreeBox {
-  return (obj || new GeoTreeBox()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+static getRootAsGTreeBox(bb:flatbuffers.ByteBuffer, obj?:GTreeBox):GTreeBox {
+  return (obj || new GTreeBox()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-static getSizePrefixedRootAsGeoTreeBox(bb:flatbuffers.ByteBuffer, obj?:GeoTreeBox):GeoTreeBox {
+static getSizePrefixedRootAsGTreeBox(bb:flatbuffers.ByteBuffer, obj?:GTreeBox):GTreeBox {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-  return (obj || new GeoTreeBox()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+  return (obj || new GTreeBox()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
 key():string|null
@@ -30,9 +30,9 @@ key(optionalEncoding?:any):string|Uint8Array|null {
   return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
 }
 
-data(index: number, obj?:GeoTreeBox):GeoTreeBox|null {
+data(index: number, obj?:GTreeBox):GTreeBox|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? (obj || new GeoTreeBox()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+  return offset ? (obj || new GTreeBox()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
 }
 
 dataLength():number {
@@ -40,9 +40,9 @@ dataLength():number {
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
-values(index: number, obj?:GeoTreeNode):GeoTreeNode|null {
+values(index: number, obj?:GTreeNode):GTreeNode|null {
   const offset = this.bb!.__offset(this.bb_pos, 8);
-  return offset ? (obj || new GeoTreeNode()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+  return offset ? (obj || new GTreeNode()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
 }
 
 valuesLength():number {
@@ -50,7 +50,7 @@ valuesLength():number {
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
-static startGeoTreeBox(builder:flatbuffers.Builder) {
+static startGTreeBox(builder:flatbuffers.Builder) {
   builder.startObject(3);
 }
 
@@ -90,16 +90,16 @@ static startValuesVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(4, numElems, 4);
 }
 
-static endGeoTreeBox(builder:flatbuffers.Builder):flatbuffers.Offset {
+static endGTreeBox(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
 }
 
-static createGeoTreeBox(builder:flatbuffers.Builder, keyOffset:flatbuffers.Offset, dataOffset:flatbuffers.Offset, valuesOffset:flatbuffers.Offset):flatbuffers.Offset {
-  GeoTreeBox.startGeoTreeBox(builder);
-  GeoTreeBox.addKey(builder, keyOffset);
-  GeoTreeBox.addData(builder, dataOffset);
-  GeoTreeBox.addValues(builder, valuesOffset);
-  return GeoTreeBox.endGeoTreeBox(builder);
+static createGTreeBox(builder:flatbuffers.Builder, keyOffset:flatbuffers.Offset, dataOffset:flatbuffers.Offset, valuesOffset:flatbuffers.Offset):flatbuffers.Offset {
+  GTreeBox.startGTreeBox(builder);
+  GTreeBox.addKey(builder, keyOffset);
+  GTreeBox.addData(builder, dataOffset);
+  GTreeBox.addValues(builder, valuesOffset);
+  return GTreeBox.endGTreeBox(builder);
 }
 }

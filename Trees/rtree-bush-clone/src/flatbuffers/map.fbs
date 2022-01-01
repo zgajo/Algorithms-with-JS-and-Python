@@ -1,0 +1,46 @@
+namespace MapData;
+
+table GTreeNode {
+  id: string;
+  points_to: [string];
+  distance: [short];
+}
+
+table GTreeBox {
+  key: string;
+  data: [GTreeBox];
+  values: [GTreeNode];
+}
+
+table GTree {
+  precision: byte;
+  data: [GTreeBox];
+}
+
+table BTreeNode {
+  keys: [double];
+  values: [GTreeNode];  
+  is_shared: bool = false;
+  children: [BTreeNode];
+}
+
+/** BTree of Nodes **/
+table BTreeData {
+  size: short;
+  max_node_size: ubyte;
+  root: BTreeNode;
+}
+
+table MapTable {
+  // Store all of the way nodes
+  way_nodes_geotree: GTree;
+  // Store all of the data nodes, for later radious query
+  // we could break this even further to geotree of specific data, but it will take more space
+  data_nodes_geotree: GTree;
+  // Store all of the data nodes, for later radious query
+  // we could break this even further to btree of specific data, but it will take more space
+  // (example btree of zoos, btree of historic sculptures)
+  btree: BTreeData;
+}
+
+root_type MapTable;

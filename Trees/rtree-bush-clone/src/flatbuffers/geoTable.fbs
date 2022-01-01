@@ -1,0 +1,53 @@
+namespace GeoTable;
+
+struct Short {
+  k: short;
+}
+
+table String {
+  k: string;
+}
+
+union Key {
+  Short, String
+}
+
+table BTreeNode {
+  keys: [string];
+  values: [GTreeNode];  
+  is_shared: bool = false;
+  children: [BTreeNode];
+}
+
+/** BTree of Nodes **/
+table BNodesTree {
+  size: short;
+  max_node_size: ubyte;
+  root: BTreeNode;
+}
+
+table GTreeNode {
+  id: string;
+  points_to: [string];
+  distance: [short];
+}
+
+table GTreeBox {
+  key: string;
+  data: [GTreeBox];
+  values: [GTreeNode];
+}
+
+table GTree {
+  precision: byte;
+  data: [GTreeBox];
+}
+
+table NodesTable {
+  place_nodes: GTree;
+  poi_nodes: GTree;
+  index_places: BNodesTree;
+  index_pois: BNodesTree;
+}
+
+root_type NodesTable;

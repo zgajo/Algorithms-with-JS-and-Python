@@ -2,25 +2,25 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { GeoTreeBox } from '../geo-tree/geo-tree-box';
+import { GTreeBox } from '../geo-table/g-tree-box';
 
 
-export class GeoTree {
+export class GTree {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
-__init(i:number, bb:flatbuffers.ByteBuffer):GeoTree {
+__init(i:number, bb:flatbuffers.ByteBuffer):GTree {
   this.bb_pos = i;
   this.bb = bb;
   return this;
 }
 
-static getRootAsGeoTree(bb:flatbuffers.ByteBuffer, obj?:GeoTree):GeoTree {
-  return (obj || new GeoTree()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+static getRootAsGTree(bb:flatbuffers.ByteBuffer, obj?:GTree):GTree {
+  return (obj || new GTree()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-static getSizePrefixedRootAsGeoTree(bb:flatbuffers.ByteBuffer, obj?:GeoTree):GeoTree {
+static getSizePrefixedRootAsGTree(bb:flatbuffers.ByteBuffer, obj?:GTree):GTree {
   bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
-  return (obj || new GeoTree()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+  return (obj || new GTree()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
 precision():number {
@@ -39,9 +39,9 @@ mutate_precision(value:number):boolean {
   return true;
 }
 
-data(index: number, obj?:GeoTreeBox):GeoTreeBox|null {
+data(index: number, obj?:GTreeBox):GTreeBox|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? (obj || new GeoTreeBox()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+  return offset ? (obj || new GTreeBox()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
 }
 
 dataLength():number {
@@ -49,7 +49,7 @@ dataLength():number {
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
-static startGeoTree(builder:flatbuffers.Builder) {
+static startGTree(builder:flatbuffers.Builder) {
   builder.startObject(2);
 }
 
@@ -73,15 +73,15 @@ static startDataVector(builder:flatbuffers.Builder, numElems:number) {
   builder.startVector(4, numElems, 4);
 }
 
-static endGeoTree(builder:flatbuffers.Builder):flatbuffers.Offset {
+static endGTree(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
 }
 
-static createGeoTree(builder:flatbuffers.Builder, precision:number, dataOffset:flatbuffers.Offset):flatbuffers.Offset {
-  GeoTree.startGeoTree(builder);
-  GeoTree.addPrecision(builder, precision);
-  GeoTree.addData(builder, dataOffset);
-  return GeoTree.endGeoTree(builder);
+static createGTree(builder:flatbuffers.Builder, precision:number, dataOffset:flatbuffers.Offset):flatbuffers.Offset {
+  GTree.startGTree(builder);
+  GTree.addPrecision(builder, precision);
+  GTree.addData(builder, dataOffset);
+  return GTree.endGTree(builder);
 }
 }

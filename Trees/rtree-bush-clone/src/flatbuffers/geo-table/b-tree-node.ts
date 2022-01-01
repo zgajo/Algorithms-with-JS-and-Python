@@ -2,7 +2,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { BTreeLeafNode } from '../../map/node/b-tree-leaf-node';
+import { GTreeNode } from '../geo-table/g-tree-node';
 
 
 export class BTreeNode {
@@ -23,9 +23,11 @@ static getSizePrefixedRootAsBTreeNode(bb:flatbuffers.ByteBuffer, obj?:BTreeNode)
   return (obj || new BTreeNode()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-keys(index: number):number|null {
+keys(index: number):string
+keys(index: number,optionalEncoding:flatbuffers.Encoding):string|Uint8Array
+keys(index: number,optionalEncoding?:any):string|Uint8Array|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
+  return offset ? this.bb!.__string(this.bb!.__vector(this.bb_pos + offset) + index * 4, optionalEncoding) : null;
 }
 
 keysLength():number {
@@ -33,14 +35,9 @@ keysLength():number {
   return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
 }
 
-keysArray():Float64Array|null {
-  const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-}
-
-values(index: number, obj?:BTreeLeafNode):BTreeLeafNode|null {
+values(index: number, obj?:GTreeNode):GTreeNode|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? (obj || new BTreeLeafNode()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+  return offset ? (obj || new GTreeNode()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
 }
 
 valuesLength():number {
@@ -82,21 +79,16 @@ static addKeys(builder:flatbuffers.Builder, keysOffset:flatbuffers.Offset) {
   builder.addFieldOffset(0, keysOffset, 0);
 }
 
-static createKeysVector(builder:flatbuffers.Builder, data:number[]|Float64Array):flatbuffers.Offset;
-/**
- * @deprecated This Uint8Array overload will be removed in the future.
- */
-static createKeysVector(builder:flatbuffers.Builder, data:number[]|Uint8Array):flatbuffers.Offset;
-static createKeysVector(builder:flatbuffers.Builder, data:number[]|Float64Array|Uint8Array):flatbuffers.Offset {
-  builder.startVector(8, data.length, 8);
+static createKeysVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
   for (let i = data.length - 1; i >= 0; i--) {
-    builder.addFloat64(data[i]!);
+    builder.addOffset(data[i]!);
   }
   return builder.endVector();
 }
 
 static startKeysVector(builder:flatbuffers.Builder, numElems:number) {
-  builder.startVector(8, numElems, 8);
+  builder.startVector(4, numElems, 4);
 }
 
 static addValues(builder:flatbuffers.Builder, valuesOffset:flatbuffers.Offset) {
