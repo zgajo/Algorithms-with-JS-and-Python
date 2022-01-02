@@ -26,7 +26,7 @@ interface INodesTbl {
   index: {
     streets: BTree<string, any>;
     places: BTree<string, any>;
-    pois: BTree<string, any>;
+    pois: BTree<string, any[]>;
   };
 }
 
@@ -46,7 +46,7 @@ export const bTreeWayNodeGeohash: BTree<string, Node> = new BTree();
 console.time("kreiranje karte");
 const createNodesForWay = (newWay: Way) => {
   newWay.nodeRefs.forEach((element: string) => {
-    const node = bTreeWayNode.get(Number(element));
+    let node = bTreeWayNode.get(Number(element));
 
     if (node) {
       node.increaseLinkCount();
@@ -293,7 +293,30 @@ parse({
 
       NodesTbl.poiNodes.insert(geoHashId, geoHashNode);
 
-      NodesTbl.index.pois.set(node.tags.name, geoHashNode);
+      NodesTbl.index.pois.set(node.tags.name, [geoHashNode]);
+    }
+    if (nodeHelper.isAmenity(node)) {
+      if (
+        node.tags?.name === "McDonald's" ||
+        node.tags?.brand === "McDonald's"
+      ) {
+        console.log("node");
+      }
+      bTreePOI.set(node.tags.name, node);
+      const geoHashId = geohash.encode(node.lat, node.lon, ENCODE);
+
+      const geoHashNode = new GeoTreeNode({
+        id: geoHashId,
+        tags: node.tags,
+      });
+
+      NodesTbl.poiNodes.insert(geoHashId, geoHashNode);
+
+      NodesTbl.index.pois.set(
+        node.tags.name || node.tags.brand,
+        [geoHashNode],
+        true
+      );
     }
 
     if (nodeHelper.isPlace(node)) {
@@ -329,7 +352,23 @@ parse({
       });
 
       NodesTbl.poiNodes.insert(geoHashId, geoHashNode);
-      NodesTbl.index.pois.set(way.tags.name, geoHashNode);
+      NodesTbl.index.pois.set(way.tags.name, [geoHashNode]);
+    }
+
+    if (wayHelper.isAmenity(way)) {
+      const { middleLat, middleLon } = wayHelper.findMiddleCoordinate(
+        way,
+        bTreeNode
+      );
+
+      const geoHashId = geohash.encode(middleLat, middleLon, ENCODE);
+      const geoHashNode = new GeoTreeNode({
+        id: geoHashId,
+        tags: way.tags,
+      });
+
+      NodesTbl.poiNodes.insert(geoHashId, geoHashNode);
+      NodesTbl.index.pois.set(way.tags.name || way.tags.brand, [geoHashNode]);
     }
 
     if (wayHelper.isPlace(way)) {

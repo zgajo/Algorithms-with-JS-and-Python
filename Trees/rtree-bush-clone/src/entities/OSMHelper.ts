@@ -60,6 +60,14 @@ export class OSMHelper {
     return false;
   }
 
+  isAmenity(node: Node | Way): boolean {
+    if (node.tags?.amenity && (node.tags?.name || node.tags?.brand)) {
+      return true;
+    }
+
+    return false;
+  }
+
   isWaterway(node: Node | Way): boolean {
     if (node.tags?.waterway && node.tags?.name) {
       // List of waterways we want to store

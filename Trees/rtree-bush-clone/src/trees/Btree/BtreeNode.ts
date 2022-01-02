@@ -368,7 +368,18 @@ export class BNode<K, V> {
         if (value !== undefined) this.reifyValues();
         // usually this is a no-op, but some users may wish to edit the key
         this.keys[i] = key;
-        this.values[i] = value;
+
+        const t =
+          value instanceof Array
+            ? ([
+                ...(this.values[i]
+                  ? (this.values[i] as unknown as V[]).map((el) => el)
+                  : []),
+                ...value,
+              ] as unknown as V)
+            : value;
+
+        this.values[i] = t;
       }
       return false;
     }
@@ -390,6 +401,7 @@ export class BNode<K, V> {
         this.values = undefVals.slice(0, this.keys.length - 1);
       }
     }
+
     this.values.splice(i, 0, value);
     return true;
   }
