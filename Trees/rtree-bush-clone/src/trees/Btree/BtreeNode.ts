@@ -477,17 +477,17 @@ export class BNode<K, V> {
           if (editMode === true) {
             if (key !== keys[i] || this.isShared === true)
               throw new Error("BTree illegally changed or cloned in editRange");
-            if (result.delete) {
+            if (result && result.delete) {
               this.keys.splice(i, 1);
               if (this.values !== undefVals) this.values.splice(i, 1);
               tree._size--;
               i--;
               iHigh--;
-            } else if (result.hasOwnProperty("value")) {
+            } else if (result && result.hasOwnProperty("value")) {
               values![i] = result.value!;
             }
           }
-          if (result.break !== undefined) return result;
+          if (result && result.break !== undefined) return result;
         }
       }
     } else count += iHigh - iLow;

@@ -1,4 +1,4 @@
-import geohash from "ngeohash";
+import * as geohash from "ngeohash";
 import * as path from "path";
 
 import { Builder, ByteBuffer } from "flatbuffers";
