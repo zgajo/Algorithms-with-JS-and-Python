@@ -159,8 +159,6 @@ export default class BTree<K = any, V = any>
   }
 
   createIndexForFlat(builder: Builder) {
-    console.log("rootNode");
-
     const rootNode = this._root.storeIndexTo(builder);
 
     BNodesTree.startBNodesTree(builder);
