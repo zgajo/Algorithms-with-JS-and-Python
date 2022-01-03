@@ -2,6 +2,8 @@ import geohash from "ngeohash";
 import * as fs from "fs";
 import { parse } from "osm-read";
 import * as path from "path";
+import { Worker, isMainThread } from "worker_threads";
+
 import { NodeHelper } from "./entities/NodeHelper";
 import { WayHelper } from "./entities/WayHelper";
 import { haversine } from "./graph/aStar2";
@@ -9,37 +11,18 @@ import BTree from "./trees/Btree";
 import { GeoTree, GeoTreeNode } from "./trees/GeoTree/GeoTree";
 import { Node } from "./trees/Node";
 import { Way } from "./trees/Way";
-import { COUNTRY } from "./utils/constants";
+import { COUNTRY, ENCODE } from "./utils/constants";
 import { connectGeotreeNodesInWay } from "./utils/helper";
 import { Builder, ByteBuffer } from "flatbuffers";
 import { NodesTable } from "./flatbuffers/geo-table/nodes-table";
+import bTreeNode from "./modules/singleton/bNodesTree";
+import NodesTbl from "./modules/singleton/nodeTable";
+import bTreePOI from "./modules/singleton/bTreePoi";
 
 const wayHelper = new WayHelper();
 const nodeHelper = new NodeHelper();
 
-const ENCODE = 9;
-
-interface INodesTbl {
-  wayNodes: GeoTree;
-  placeNodes: GeoTree;
-  poiNodes: GeoTree;
-  index: {
-    streets: BTree<string, any>;
-    places: BTree<string, any>;
-    pois: BTree<string, any[]>;
-  };
-}
-
-const NodesTbl: INodesTbl = {
-  wayNodes: new GeoTree(ENCODE),
-  poiNodes: new GeoTree(ENCODE),
-  placeNodes: new GeoTree(ENCODE),
-  index: { pois: new BTree(), places: new BTree(), streets: new BTree() },
-};
-
 const geotree: GeoTree = new GeoTree(ENCODE);
-const bTreeNode: BTree<number, any> = new BTree();
-const bTreePOI = new BTree();
 export const bTreeWay: BTree<number, Way> = new BTree();
 export const bTreeWayNode: BTree<number, Node> = new BTree();
 export const bTreeWayNodeGeohash: BTree<string, Node> = new BTree();
@@ -54,7 +37,6 @@ const createNodesForWay = (newWay: Way) => {
       newWay.addNode(node);
     } else {
       const storedNode = bTreeNode.get(Number(element));
-
       const newNode = new Node({
         ...storedNode,
       });
@@ -325,10 +307,6 @@ parse({
     }
   },
   way: function (way: Way) {
-    // if (wayHelper.isStreetAddress(way)) {
-    //   console.log(way);
-    // }
-
     if (
       wayHelper.isHistoric(way) ||
       wayHelper.isWaterway(way) ||
