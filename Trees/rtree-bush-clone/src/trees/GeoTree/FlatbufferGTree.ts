@@ -226,4 +226,12 @@ export class FlatBufferGeoHashTree {
       ),
     };
   }
+
+  boundingBoxSearch(geohash: string) {
+    // hops to neighbours until POI is found
+  }
+
+  proximitySearch(geohash: string) {
+    // bottom - up seach
+  }
 }
