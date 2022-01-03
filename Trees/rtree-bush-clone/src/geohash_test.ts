@@ -241,7 +241,7 @@ const main = () => {
 
   NodesTable.addPoiNodes(builder, poiNodes);
   if (poiIndex) {
-    NodesTable.addIndexPlaces(builder, poiIndex);
+    NodesTable.addIndexPois(builder, poiIndex);
   }
 
   const nodesTable = NodesTable.endNodesTable(builder);
@@ -296,12 +296,6 @@ parse({
       NodesTbl.index.pois.set(node.tags.name, [geoHashNode]);
     }
     if (nodeHelper.isAmenity(node)) {
-      if (
-        node.tags?.name === "McDonald's" ||
-        node.tags?.brand === "McDonald's"
-      ) {
-        console.log("node");
-      }
       bTreePOI.set(node.tags.name, node);
       const geoHashId = geohash.encode(node.lat, node.lon, ENCODE);
 
