@@ -1,23 +1,21 @@
-import geohash from "ngeohash";
+import { Builder } from "flatbuffers";
 import * as fs from "fs";
+import geohash from "ngeohash";
 import { parse } from "osm-read";
 import * as path from "path";
-import { Worker, isMainThread } from "worker_threads";
-
 import { NodeHelper } from "./entities/NodeHelper";
 import { WayHelper } from "./entities/WayHelper";
+import { NodesTable } from "./flatbuffers/geo-table/nodes-table";
 import { haversine } from "./graph/aStar2";
+import bTreeNode from "./modules/singleton/bNodesTree";
+import bTreePOI from "./modules/singleton/bTreePoi";
+import NodesTbl from "./modules/singleton/nodeTable";
 import BTree from "./trees/Btree";
 import { GeoTree, GeoTreeNode } from "./trees/GeoTree/GeoTree";
 import { Node } from "./trees/Node";
 import { Way } from "./trees/Way";
 import { COUNTRY, ENCODE } from "./utils/constants";
 import { connectGeotreeNodesInWay } from "./utils/helper";
-import { Builder, ByteBuffer } from "flatbuffers";
-import { NodesTable } from "./flatbuffers/geo-table/nodes-table";
-import bTreeNode from "./modules/singleton/bNodesTree";
-import NodesTbl from "./modules/singleton/nodeTable";
-import bTreePOI from "./modules/singleton/bTreePoi";
 
 const wayHelper = new WayHelper();
 const nodeHelper = new NodeHelper();
@@ -245,6 +243,9 @@ const main = () => {
   // console.timeEnd("astar 4");
 
   // bTreeLoad.loadNodesFromFile(path.join(__dirname, "BtreeNodes.bin"));
+
+  const used = process.memoryUsage().heapUsed / 1024 / 1024;
+  console.log(`The script uses approximately ${used} MB`);
 };
 
 parse({
