@@ -1,8 +1,58 @@
+import * as geohash from "ngeohash";
 import { defaultComparator } from "sorted-btree";
 import { GTree } from "../../flatbuffers/geo-table/g-tree";
 import { GTreeBox } from "../../flatbuffers/geo-table/g-tree-box";
+import { GTreeNode } from "../../flatbuffers/geo-table/g-tree-node";
 
 const base32 = "0123456789bcdefghjkmnpqrstuvwxyz"; // (geohash-specific) Base32 map
+
+function inCircleCheck(
+  latitude: number,
+  longitude: number,
+  centre_lat: number,
+  centre_lon: number,
+  radius: number
+) {
+  const xDiff = longitude - centre_lon;
+  const yDiff = latitude - centre_lat;
+
+  if (Math.pow(xDiff, 2) + Math.pow(yDiff, 2) <= Math.pow(radius, 2)) {
+    return true;
+  }
+
+  return false;
+}
+
+function getCentroid(
+  latitude: number,
+  longitude: number,
+  height: number,
+  width: number
+) {
+  const yCen = latitude + height / 2;
+  const xCen = longitude + width / 2;
+
+  return [xCen, yCen];
+}
+
+function convertToLatLon(
+  y: number,
+  x: number,
+  latitude: number,
+  longitude: number
+) {
+  const pi = 3.14159265359;
+
+  const rEarth = 6371000;
+
+  const latDiff = (y / rEarth) * (180 / pi);
+  const lonDiff = ((x / rEarth) * (180 / pi)) / Math.cos((latitude * pi) / 180);
+
+  const finalLat = latitude + latDiff;
+  const finalLon = longitude + lonDiff;
+
+  return [finalLat, finalLon];
+}
 
 export class FlatBufferGeoHashTree {
   geohashTree: GTree;
@@ -231,7 +281,104 @@ export class FlatBufferGeoHashTree {
     // hops to neighbours until POI is found
   }
 
-  proximitySearch(geohash: string) {
+  proximitySearch() {
     // bottom - up seach
+  }
+
+  /**
+   * https://github.com/ashwin711/proximityhash
+   * @param latitude
+   * @param longitude
+   * @param radius
+   * @param precision
+   * @param minlevel
+   * @param maxlevel
+   * @returns
+   */
+  static proximityHash(
+    latitude: number,
+    longitude: number,
+    radius: number,
+    precision: number,
+    minlevel = 1,
+    maxlevel = 12
+  ) {
+    let x = 0.0;
+    let y = 0.0;
+
+    const points = [];
+    const geohashes = new Set();
+
+    // 1	≤ 5,000km	×	5,000km
+    // 2	≤ 1,250km	×	625km
+    // 3	≤ 156km	×	156km
+    // 4	≤ 39.1km	×	19.5km
+    // 5	≤ 4.89km	×	4.89km
+    // 6	≤ 1.22km	×	0.61km
+    // 7	≤ 153m	×	153m
+    // 8	≤ 38.2m	×	19.1m
+    // 9	≤ 4.77m	×	4.77m
+    // 10	≤ 1.19m	×	0.596m
+    // 11	≤ 149mm	×	149mm
+    // 12	≤ 37.2mm	×	18.6mm
+    const gridWidth = [
+      5009400.0, 1252300.0, 156500.0, 39100.0, 4900.0, 1200.0, 152.9, 38.2, 4.8,
+      1.2, 0.149, 0.037,
+    ];
+    const gridHeight = [
+      4992600.0, 624100.0, 156000.0, 19500.0, 4900.0, 609.4, 152.4, 19.0, 4.8,
+      0.595, 0.149, 0.0199,
+    ];
+
+    let height = gridHeight[precision - 1] / 2;
+    let width = gridWidth[precision - 1] / 2;
+
+    const latMoves = parseInt(Math.ceil(radius / height).toString());
+    const lonMoves = parseInt(Math.ceil(radius / width).toString());
+
+    for (let i = 0; i < latMoves; i++) {
+      const tempLat = y + height * i;
+      for (let j = 0; j < lonMoves; j++) {
+        const tempLon = x + width * j;
+
+        if (inCircleCheck(tempLat, tempLon, y, x, radius)) {
+          const [xCen, yCen] = getCentroid(tempLat, tempLon, height, width);
+
+          const [lat1, lon1] = convertToLatLon(yCen, xCen, latitude, longitude);
+          points.push([lat1, lon1]);
+          const [lat2, lon2] = convertToLatLon(
+            -yCen,
+            xCen,
+            latitude,
+            longitude
+          );
+          points.push([lat2, lon2]);
+          const [lat3, lon3] = convertToLatLon(
+            yCen,
+            -xCen,
+            latitude,
+            longitude
+          );
+          points.push([lat3, lon3]);
+          const [lat4, lon4] = convertToLatLon(
+            -yCen,
+            -xCen,
+            latitude,
+            longitude
+          );
+          points.push([lat4, lon4]);
+        }
+      }
+    }
+
+    for (const point of points) {
+      const hash = geohash.encode(point[0], point[1], precision);
+
+      if (!geohashes.has(hash)) {
+        geohashes.add(hash);
+      }
+    }
+
+    return geohashes;
   }
 }
