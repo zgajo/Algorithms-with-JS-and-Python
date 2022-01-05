@@ -67,7 +67,7 @@ export class FlatBufferGeoHashTree {
     key: string,
     leaf: boolean,
     cmp = defaultComparator
-  ): number {
+  ): number | null {
     var lo = 0,
       hi = length,
       mid = hi >> 1,
@@ -97,6 +97,7 @@ export class FlatBufferGeoHashTree {
       mid = (lo + hi) >> 1;
     }
     if (leaf && !leafNodeFound) {
+      return null;
       throw new Error(`GeoHashTree: Key ${key} not found in db`);
     }
     return chosen;
@@ -121,6 +122,10 @@ export class FlatBufferGeoHashTree {
         searchKey,
         gTreeDataLength <= 0
       );
+
+      if (index === null) {
+        break;
+      }
 
       gTreeDataLength = gTreeData.data(index)?.dataLength() as number;
 
@@ -285,6 +290,85 @@ export class FlatBufferGeoHashTree {
     // bottom - up seach
   }
 
+  findNearestNodes(latitude: number, longitude: number) {
+    let radius = 1000;
+    const PRECISION = 6;
+
+    const geohashes = FlatBufferGeoHashTree.proximityHash(
+      latitude,
+      longitude,
+      radius,
+      PRECISION
+    );
+
+    geohashes.forEach((hash) => {
+      let tree: GTree | GTreeBox | null = this.geohashTree;
+
+      let currentPrecision = PRECISION - 1;
+
+      while (tree && currentPrecision >= 0) {
+        const searchKey = hash.substring(0, PRECISION - currentPrecision);
+
+        const index = this.indexOf(
+          tree,
+          tree.dataLength(),
+          searchKey,
+          currentPrecision === 0
+        );
+
+        if (index === null) {
+          tree = null;
+          break;
+        }
+
+        tree = tree.data(index);
+
+        --currentPrecision;
+      }
+
+      if (tree) {
+        console.log((tree as GTreeBox).key());
+        const values = this.findAllGeohashValues(tree as GTreeBox);
+        console.log(values);
+      }
+    });
+  }
+
+  findAllGeohashValues(tree: GTree | GTreeBox):
+    | null
+    | {
+        id: string | null;
+        tags: any;
+      }[] {
+    if (tree.dataLength()) {
+      for (let i = 0; i < tree.dataLength(); i++) {
+        const nextTree = tree.data(i);
+        if (nextTree) {
+          return this.findAllGeohashValues(nextTree);
+        }
+      }
+
+      return null;
+    } else if ((tree as GTreeBox).valuesLength()) {
+      let values = [];
+
+      for (let i = 0; i < (tree as GTreeBox).valuesLength(); i++) {
+        const value = (tree as GTreeBox).values(i);
+        if (value) {
+          const valueObject = {
+            id: value?.id(),
+            tags: JSON.parse(value?.tags() || ""),
+          };
+          values.push(valueObject);
+        }
+      }
+
+      return values;
+    } else {
+      return null;
+    }
+  }
+
   /**
    * https://github.com/ashwin711/proximityhash
    * @param latitude
@@ -307,7 +391,7 @@ export class FlatBufferGeoHashTree {
     let y = 0.0;
 
     const points = [];
-    const geohashes = new Set();
+    const geohashes: Set<string> = new Set();
 
     // 1	≤ 5,000km	×	5,000km
     // 2	≤ 1,250km	×	625km
