@@ -1,31 +1,27 @@
-import { Builder, ByteBuffer } from "flatbuffers";
-import * as fs from "fs";
-import * as path from "path";
+import { ByteBuffer } from "flatbuffers";
+import fs from "fs";
+import path from "path";
 import { NodesTable } from "./flatbuffers/geo-table/nodes-table";
-import { FlatBufferBTree } from "./trees/Btree/FlatbufferBTree";
 import { FlatBufferGeoHashTree } from "./trees/GeoTree/FlatbufferGTree";
 import { COUNTRY } from "./utils/constants";
 
-const storePath = path.join(__dirname, COUNTRY + "GtreeNodes.bin");
+console.log(FlatBufferGeoHashTree.proximityHash(45.11096, 13.70914, 1000, 6));
 
-var bytes = new Uint8Array(fs.readFileSync(storePath));
+var bytes = new Uint8Array(
+  fs.readFileSync(path.join(__dirname, COUNTRY + "GtreeNodes.bin"))
+);
 
 var buf2 = new ByteBuffer(bytes);
+
+// Get an accessor to the root object inside the buffer.
 var nodesTable = NodesTable.getRootAsNodesTable(buf2);
+const places = nodesTable.placeNodes();
+if (places) {
+  const geohashTree = new FlatBufferGeoHashTree(places);
+  const foundInRadius = geohashTree.findNearestNodes(45.11096, 13.70914);
 
-const nodesTablePlaceNodes = nodesTable.placeNodes();
+  console.log(foundInRadius);
 
-const nodesTableIndexPlaces = nodesTable.indexPlaces();
-const placesIndex = nodesTableIndexPlaces
-  ? new FlatBufferBTree(nodesTableIndexPlaces)
-  : null;
-const placesNodes = nodesTablePlaceNodes
-  ? new FlatBufferGeoHashTree(nodesTablePlaceNodes)
-  : null;
-
-const geonode = placesNodes?.getNode("u218qqwpe");
-const node = placesIndex?.getKey("Rovinj");
-
-console.log(geonode?.id(), JSON.parse(geonode?.tags() || ""));
-console.log(node?.id(), JSON.parse(node?.tags() || ""));
-console.log("object");
+  const bounds = FlatBufferGeoHashTree.bounds("u218xunwq");
+  console.log(Object.values(bounds.ne), Object.values(bounds.sw));
+}

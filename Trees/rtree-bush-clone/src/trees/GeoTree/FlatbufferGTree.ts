@@ -291,7 +291,7 @@ export class FlatBufferGeoHashTree {
   }
 
   findNearestNodes(latitude: number, longitude: number) {
-    let radius = 1000;
+    let radius = 4500;
     const PRECISION = 6;
 
     const geohashes = FlatBufferGeoHashTree.proximityHash(
@@ -300,6 +300,11 @@ export class FlatBufferGeoHashTree {
       radius,
       PRECISION
     );
+
+    let nodes: {
+      id: string | null;
+      tags: any;
+    }[] = [];
 
     geohashes.forEach((hash) => {
       let tree: GTree | GTreeBox | null = this.geohashTree;
@@ -329,9 +334,13 @@ export class FlatBufferGeoHashTree {
       if (tree) {
         console.log((tree as GTreeBox).key());
         const values = this.findAllGeohashValues(tree as GTreeBox);
-        console.log(values);
+        if (values) {
+          nodes = nodes.concat(values);
+        }
       }
     });
+
+    return nodes;
   }
 
   findAllGeohashValues(tree: GTree | GTreeBox):
