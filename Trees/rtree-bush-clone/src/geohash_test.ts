@@ -15,7 +15,21 @@ import { GeoTree, GeoTreeNode } from "./trees/GeoTree/GeoTree";
 import { Node } from "./trees/Node";
 import { Way } from "./trees/Way";
 import { COUNTRY, ENCODE } from "./utils/constants";
-import { connectGeotreeNodesInWay } from "./utils/helper";
+import {
+  calulateHwySpeedAvg,
+  connectGeotreeNodesInWay,
+  hwySpeedAvg,
+} from "./utils/helper";
+import { Graph } from "./graph/osmnx-graph/graph";
+import { Distance } from "./graph/osmnx-graph/distance";
+import { countStreetsPerNode } from "./graph/osmnx-graph/stats";
+import {
+  parseNodesPaths,
+  setNodeAttributes,
+} from "./graph/osmnx-graph/graphHelper";
+import { addEdgeSpeeds, addEdgeTravelTimes } from "./graph/osmnx-graph/speed";
+import { TGraphWay } from "./graph/osmnx-graph/interface/graph";
+import { OverpassData } from "./graph/osmnx/interface/graph";
 
 const wayHelper = new WayHelper();
 const nodeHelper = new NodeHelper();
@@ -24,6 +38,8 @@ const geotree: GeoTree = new GeoTree(ENCODE);
 export const bTreeWay: BTree<number, Way> = new BTree();
 export const bTreeWayNode: BTree<number, Node> = new BTree();
 export const bTreeWayNodeGeohash: BTree<string, Node> = new BTree();
+const GBuff = new Graph();
+
 console.time("kreiranje karte");
 const createNodesForWay = (newWay: Way) => {
   newWay.nodeRefs.forEach((element: string) => {
@@ -48,7 +64,26 @@ const createNodesForWay = (newWay: Way) => {
   });
 };
 
+const generatedJson: { elements: any[] } = { elements: [] };
+
 const main = () => {
+  calulateHwySpeedAvg();
+  // brisemo road
+
+  bTreeWay.valuesArray().forEach((way) => {
+    let streetLength = 0;
+    for (let i = 0; i < way.nodes.length - 1; i++) {
+      const node = way.nodes[i];
+      const node2 = way.nodes[i + 1];
+      const lat1 = node.lat;
+      const lng1 = node.lon;
+      const lat2 = node2.lat;
+      const lng2 = node2.lon;
+      streetLength += Distance.greatCircleVecNum(lat1, lng1, lat2, lng2);
+    }
+    way.setStreetLength(streetLength);
+  });
+
   bTreeWay.valuesArray().forEach((way) => {
     let nodesDistance = 0;
     let startCalculationNode: Node = way.nodes[0];
@@ -60,7 +95,14 @@ const main = () => {
       }
       // zadnji node
       if (index === way.nodes.length - 1) {
-        nodesDistance += haversine(way.nodes[index - 1], node);
+        const node1 = way.nodes[index - 1];
+        const node2 = node;
+        nodesDistance += Distance.greatCircleVecNum(
+          node1.lat,
+          node1.lon,
+          node2.lat,
+          node2.lon
+        );
 
         let newStartNode = false;
         const h = geohash.encode(
@@ -96,7 +138,7 @@ const main = () => {
           way,
           startGTreeCalculationNode,
           gTreeNode,
-          parseInt(String(nodesDistance))
+          Number(parseFloat(String(nodesDistance)).toFixed(1))
         );
 
         if (newStartNode) {
@@ -120,7 +162,14 @@ const main = () => {
       }
       // ovo je kad se ne brise
       if (node.linkCount > 1) {
-        nodesDistance += haversine(way.nodes[index - 1], node);
+        const node1 = way.nodes[index - 1];
+        const node2 = node;
+        nodesDistance += Distance.greatCircleVecNum(
+          node1.lat,
+          node1.lon,
+          node2.lat,
+          node2.lon
+        );
 
         let newStartNode = false;
         let startGTreeCalculationNode = (geotree.getNode(
@@ -156,7 +205,7 @@ const main = () => {
           way,
           startGTreeCalculationNode,
           gTreeNode,
-          parseInt(String(nodesDistance))
+          Number(parseFloat(String(nodesDistance)).toFixed(1))
         );
 
         if (newStartNode) {
@@ -179,7 +228,15 @@ const main = () => {
         nodesDistance = 0;
         return true;
       }
-      nodesDistance += haversine(way.nodes[index - 1], way.nodes[index]);
+      const node1 = way.nodes[index - 1];
+      const node2 = way.nodes[index];
+
+      nodesDistance += Distance.greatCircleVecNum(
+        node1.lat,
+        node1.lon,
+        node2.lat,
+        node2.lon
+      );
       // ovo je kad se treba brisati
       return false;
     });
@@ -199,9 +256,31 @@ const main = () => {
   //   // bTreeWayNode.get("748833076") as Node
   // );
   // console.timeEnd("astar 3");
+  const { nodes, paths } = parseNodesPaths(generatedJson as OverpassData);
+
+  const GBuff = new Graph();
+
+  for (let nodeKey in nodes) {
+    // @ts-ignore
+    GBuff.addNode(nodeKey, nodes[nodeKey]);
+  }
+
+  Graph._addPaths(GBuff, paths);
+
+  Distance.addEdgeLength(GBuff);
+
+  GBuff.simplifyGraph();
+
+  const spn = countStreetsPerNode(GBuff, GBuff.nodes);
+
+  setNodeAttributes(GBuff, spn, "street_count");
+  const G = GBuff;
+  addEdgeSpeeds(G);
+  addEdgeTravelTimes(G);
+
   const storePath = path.join(__dirname, COUNTRY + "GtreeNodes.bin");
 
-  var builder = new Builder(1024);
+  let builder = new Builder(1024);
   const { index: placeIndex, nodes: placeNodes } = NodesTbl.placeNodes
     .prepareIndex()
     .generateDataStructures(builder);
@@ -256,6 +335,10 @@ parse({
   },
   bounds: function (bounds: any) {},
   node: function (node: any) {
+    generatedJson.elements.push({ ...node, type: "node" });
+
+    GBuff.addNode(node.id, node);
+
     bTreeNode.set(Number(node.id), node);
 
     if (wayHelper.isStreetAddress(node)) {
@@ -308,6 +391,7 @@ parse({
     }
   },
   way: function (way: Way) {
+    generatedJson.elements.push({ ...way, nodes: way.nodeRefs, type: "way" });
     if (
       wayHelper.isHistoric(way) ||
       wayHelper.isWaterway(way) ||
@@ -361,6 +445,22 @@ parse({
 
     if (wayHelper.isRoadToStore(way)) {
       const newWay = new Way(way);
+
+      const highway = way.tags["highway"];
+      const speed = way.tags["maxspeed"];
+
+      if (!(highway in hwySpeedAvg)) {
+        hwySpeedAvg[highway] = null;
+      }
+
+      if (speed) {
+        const road = hwySpeedAvg[highway];
+        if (road) {
+          road.push(speed);
+        } else {
+          hwySpeedAvg[highway] = [speed];
+        }
+      }
 
       createNodesForWay(newWay);
 

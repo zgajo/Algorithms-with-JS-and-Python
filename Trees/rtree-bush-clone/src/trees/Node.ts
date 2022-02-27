@@ -7,10 +7,14 @@ export class Node extends BBox {
   lon: number;
   lat: number;
   pointsTo: Node[] | string[];
+  highway: string[];
   distance: number[];
+  edgeSpeed: number[];
+  travelTime: number[];
   tags: { [key: string]: any } | undefined;
   partOfWays: Way[];
   linkCount: number;
+  street_count: number;
 
   constructor(node: {
     id: string;
@@ -20,7 +24,10 @@ export class Node extends BBox {
     partOfWays?: Way[];
     linkCount?: number;
     pointsTo?: Node[] | string[];
+    highway?: string[];
     distance?: number[];
+    edgeSpeed?: number[];
+    travelTime?: number[];
   }) {
     super(node.lat, node.lon, node.lat, node.lon);
 
@@ -29,10 +36,14 @@ export class Node extends BBox {
     this.lat = node.lat;
     this.pointsTo = node.pointsTo || [];
     this.distance = node.distance || [];
+    this.edgeSpeed = node.edgeSpeed || [];
+    this.travelTime = node.travelTime || [];
+    this.highway = node.highway || [];
 
     this.tags = node.tags;
     this.partOfWays = node.partOfWays || [];
     this.linkCount = node.linkCount || 1;
+    this.street_count = node.linkCount || 1;
   }
 
   calculateDistance(to: Node): number {
@@ -50,5 +61,6 @@ export class Node extends BBox {
 
   increaseLinkCount() {
     this.linkCount += 1;
+    this.street_count += 1;
   }
 }

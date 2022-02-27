@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import path from "path";
-import { AStar } from "./graph/aStar";
+import { AStar } from "./graph/Astar";
 
 import { bTreeWay, bTreeWayNode } from "./dataGen";
 import { Node } from "./trees/Node";
@@ -22,25 +22,25 @@ app.set("view engine", "jade");
 app.get("/", (req: Request, res: Response) => {
   console.log(req.query.start);
   console.log(req.query.end);
-  if (!req.query.start || !req.query.end) {
-    return res.render("index", {
-      title: "Welcome to Login system",
-      ways: JSON.stringify(
-        bTreeWay.valuesArray().map((way) => ({
-          ...way,
-          nodes: way.nodes.map((node) => [node.lat, node.lon]),
-        }))
-      ),
-    });
-  }
+  // if (!req.query.start || !req.query.end) {
+  //   return res.render("index", {
+  //     title: "Welcome to Login system",
+  //     ways: JSON.stringify(
+  //       bTreeWay.valuesArray().map((way) => ({
+  //         ...way,
+  //         nodes: way.nodes.map((node) => [node.lat, node.lon]),
+  //       }))
+  //     ),
+  //   });
+  // }
 
-  const foundStartNode = bTreeWayNode.get(req.query.start as string) as Node;
+  const foundStartNode = bTreeWayNode.get("1454283110") as Node;
   const startNode = {
     id: foundStartNode.id,
     latLng: [foundStartNode?.lat, foundStartNode?.lon],
   };
 
-  const foundEndNode = bTreeWayNode.get(req.query.end as string) as Node;
+  const foundEndNode = bTreeWayNode.get("748833076") as Node;
   const endNode = {
     id: foundEndNode.id,
     latLng: [foundEndNode?.lat, foundEndNode?.lon],
@@ -74,40 +74,40 @@ app.get("/", (req: Request, res: Response) => {
   console.timeEnd("astar");
 
   console.time("astar 2");
-  new AStar2(path.join(__dirname, COUNTRY + "nodesBtreeNodes")).search(
-    // bTreeWayNode.get("1934144326") as Node,
-    startNode.id,
-    // bTreeWayNode.get("51390143") as Node,
-    endNode.id
-
-    // r.selo -> rovinj
-
-    // bTreeWayNode.get("1454283110") as Node,
-    // bTreeWayNode.get("748833076") as Node
-  );
+  // new AStar2(path.join(__dirname, COUNTRY + "nodesBtreeNodes")).search(
+  //   // bTreeWayNode.get("1934144326") as Node,
+  //   startNode.id,
+  //   // bTreeWayNode.get("51390143") as Node,
+  //   endNode.id
+  //
+  //   // r.selo -> rovinj
+  //
+  //   // bTreeWayNode.get("1454283110") as Node,
+  //   // bTreeWayNode.get("748833076") as Node
+  // );
   console.timeEnd("astar 2");
 
   console.time("astar 3");
   console.log("a star");
-  new AStar3(path.join(__dirname, COUNTRY + "BtreeNodes.bin")).search(
-    // bTreeWayNode.get("1934144326") as Node,
-    Number(startNode.id),
-    // bTreeWayNode.get("51390143") as Node,
-    Number(endNode.id)
-
-    // r.selo -> rovinj
-
-    // bTreeWayNode.get("1454283110") as Node,
-    // bTreeWayNode.get("748833076") as Node
-  );
+  // new AStar3(path.join(__dirname, COUNTRY + "BtreeNodes.bin")).search(
+  //   // bTreeWayNode.get("1934144326") as Node,
+  //   Number(startNode.id),
+  //   // bTreeWayNode.get("51390143") as Node,
+  //   Number(endNode.id)
+  //
+  //   // r.selo -> rovinj
+  //
+  //   // bTreeWayNode.get("1454283110") as Node,
+  //   // bTreeWayNode.get("748833076") as Node
+  // );
   console.timeEnd("astar 3");
 
   console.time("astar 4");
 
-  new AStar4(path.join(__dirname, COUNTRY + "GtreeWayNodes.bin")).search(
-    "sp91upk3u5n",
-    "sp94p2wdbs3"
-  );
+  // new AStar4(path.join(__dirname, COUNTRY + "GtreeWayNodes.bin")).search(
+  //   "sp91upk3u5n",
+  //   "sp94p2wdbs3"
+  // );
 
   console.timeEnd("astar 4");
 

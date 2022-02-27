@@ -16,22 +16,34 @@ import { GTreeBox } from "../../flatbuffers/geo-table/g-tree-box";
 
 export class GeoTreeNode {
   id: string;
-  pointsTo?: string[];
-  distance?: number[];
+  pointsTo: string[];
+  highway: string[];
+  distance: number[];
+  edgeSpeed: number[];
+  travelTime: number[];
   tags?: { [key: string]: any } | undefined;
   linkCount?: number;
+  street_count?: number;
 
   constructor(node: {
     id: string;
     pointsTo?: string[];
+    highway?: string[];
     distance?: number[];
+    edgeSpeed?: number[];
+    travelTime?: number[];
     tags?: { [key: string]: any };
     linkCount?: number;
+    street_count?: number;
   }) {
     this.id = node.id;
-    this.pointsTo = node.pointsTo;
-    this.distance = node.distance;
+    this.pointsTo = node.pointsTo || [];
+    this.highway = node.highway || [];
+    this.distance = node.distance || [];
+    this.edgeSpeed = node.edgeSpeed || [];
+    this.travelTime = node.travelTime || [];
     this.linkCount = node.linkCount;
+    this.street_count = node.street_count;
     this.tags = node.tags;
   }
 }

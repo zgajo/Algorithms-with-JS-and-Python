@@ -6,9 +6,14 @@ import { RTree } from "./trees/RTree/RTree";
 import BTree from "./trees/Btree";
 import { Way } from "./trees/Way";
 import { Node } from "./trees/Node";
-import { AStar, haversine } from "./graph/aStar";
-import { connectNodesInWay } from "./utils/helper";
+import { AStar, haversine } from "./graph/Astar";
+import {
+  calulateHwySpeedAvg,
+  connectNodesInWay,
+  hwySpeedAvg,
+} from "./utils/helper";
 import { COUNTRY } from "./utils/constants";
+import { Distance } from "./graph/osmnx-graph/distance";
 
 const btree = new BTree();
 const bTreeCity = new BTree();
@@ -38,6 +43,8 @@ If you are only working on a small data set you can of course simply read everyt
   //     .filter((el) => el.linkCount <= 1)
   //     .map((el) => el.id)
   // );
+  calulateHwySpeedAvg();
+
   bTreeWay.valuesArray().forEach((way) => {
     let nodesDistance = 0;
     let startCalculationNode: Node = way.nodes[0];
@@ -49,21 +56,42 @@ If you are only working on a small data set you can of course simply read everyt
       }
       // zadnji node
       if (index === way.nodes.length - 1) {
-        nodesDistance += haversine(way.nodes[index - 1], node);
+        const node1 = way.nodes[index - 1];
+        const node2 = node;
+        nodesDistance += Distance.greatCircleVecNum(
+          node1.lat,
+          node1.lon,
+          node2.lat,
+          node2.lon
+        );
         connectNodesInWay(way, startCalculationNode, node, nodesDistance);
         // ovo je kad se ne brise
         return true;
       }
       // ovo je kad se ne brise
       if (node.linkCount > 1) {
-        nodesDistance += haversine(way.nodes[index - 1], node);
+        const node1 = way.nodes[index - 1];
+        const node2 = node;
+        nodesDistance += Distance.greatCircleVecNum(
+          node1.lat,
+          node1.lon,
+          node2.lat,
+          node2.lon
+        );
         connectNodesInWay(way, startCalculationNode, node, nodesDistance);
         startCalculationNode = node;
         nodesDistance = 0;
         return true;
       }
-      nodesDistance += haversine(way.nodes[index - 1], way.nodes[index]);
-      // ovo je kad se treba brisati
+      const node1 = way.nodes[index - 1];
+      const node2 = way.nodes[index];
+
+      nodesDistance += Distance.greatCircleVecNum(
+        node1.lat,
+        node1.lon,
+        node2.lat,
+        node2.lon
+      ); // ovo je kad se treba brisati
       return false;
     });
   });
@@ -193,6 +221,22 @@ parse({
       // });
 
       const newWay = new Way(way);
+
+      const highway = way.tags["highway"];
+      const speed = way.tags["maxspeed"];
+
+      if (!(highway in hwySpeedAvg)) {
+        hwySpeedAvg[highway] = null;
+      }
+
+      if (speed) {
+        const road = hwySpeedAvg[highway];
+        if (road) {
+          road.push(speed);
+        } else {
+          hwySpeedAvg[highway] = [speed];
+        }
+      }
 
       newWay.nodeRefs.forEach((element: string) => {
         const node = bTreeWayNode.get(element);

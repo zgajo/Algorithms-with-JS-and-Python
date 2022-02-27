@@ -5,6 +5,7 @@ export class Way {
   tags: { [key: string]: any };
   nodeRefs: string[];
   nodes: Node[];
+  streetLength?: number;
 
   constructor(way: {
     id: string;
@@ -24,5 +25,9 @@ export class Way {
   deleteNode(nodeId: string) {
     this.nodeRefs = this.nodeRefs.filter((id) => id !== nodeId);
     this.nodes = this.nodes.filter(({ id }) => id !== nodeId);
+  }
+
+  setStreetLength(length: number){
+    this.streetLength = length
   }
 }

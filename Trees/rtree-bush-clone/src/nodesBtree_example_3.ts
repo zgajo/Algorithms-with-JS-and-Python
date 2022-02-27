@@ -91,24 +91,14 @@ const main = () => {
       // zadnji node
       if (index === way.nodes.length - 1) {
         nodesDistance += haversine(way.nodes[index - 1], node);
-        connectNodesInWay(
-          way,
-          startCalculationNode,
-          node,
-          parseInt(String(nodesDistance))
-        );
+        connectNodesInWay(way, startCalculationNode, node, nodesDistance);
         // ovo je kad se ne brise
         return true;
       }
       // ovo je kad se ne brise
       if (node.linkCount > 1) {
         nodesDistance += haversine(way.nodes[index - 1], node);
-        connectNodesInWay(
-          way,
-          startCalculationNode,
-          node,
-          parseInt(String(nodesDistance))
-        );
+        connectNodesInWay(way, startCalculationNode, node, nodesDistance);
         startCalculationNode = node;
         nodesDistance = 0;
         return true;

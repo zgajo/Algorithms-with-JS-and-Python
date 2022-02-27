@@ -36,31 +36,9 @@ mana():number {
   return offset ? this.bb!.readInt16(this.bb_pos + offset) : 150;
 }
 
-mutate_mana(value:number):boolean {
-  const offset = this.bb!.__offset(this.bb_pos, 6);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb!.writeInt16(this.bb_pos + offset, value);
-  return true;
-}
-
 hp():number {
   const offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? this.bb!.readInt16(this.bb_pos + offset) : 100;
-}
-
-mutate_hp(value:number):boolean {
-  const offset = this.bb!.__offset(this.bb_pos, 8);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb!.writeInt16(this.bb_pos + offset, value);
-  return true;
 }
 
 name():string|null
@@ -88,17 +66,6 @@ inventoryArray():Uint8Array|null {
 color():Color {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? this.bb!.readInt8(this.bb_pos + offset) : Color.Blue;
-}
-
-mutate_color(value:Color):boolean {
-  const offset = this.bb!.__offset(this.bb_pos, 16);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb!.writeInt8(this.bb_pos + offset, value);
-  return true;
 }
 
 weapons(index: number, obj?:Weapon):Weapon|null {

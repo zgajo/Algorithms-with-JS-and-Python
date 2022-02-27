@@ -6,6 +6,7 @@ import { Node } from "./trees/Node";
 import { Way } from "./trees/Way";
 import { COUNTRY } from "./utils/constants";
 import { connectNodesInWay } from "./utils/helper";
+import { Distance } from "./graph/osmnx-graph/distance";
 
 const bTreeLoad = new BTree();
 const bTreeTest = new BTree();
@@ -25,20 +26,44 @@ const main = () => {
       }
       // zadnji node
       if (index === way.nodes.length - 1) {
-        nodesDistance += haversine(way.nodes[index - 1], node);
+        const node1 = way.nodes[index - 1];
+        const node2 = node;
+        nodesDistance += Distance.greatCircleVecNum(
+          node1.lat,
+          node1.lon,
+          node2.lat,
+          node2.lon
+        );
+
         connectNodesInWay(way, startCalculationNode, node, nodesDistance);
         // ovo je kad se ne brise
         return true;
       }
       // ovo je kad se ne brise
       if (node.linkCount > 1) {
-        nodesDistance += haversine(way.nodes[index - 1], node);
+        const node1 = way.nodes[index - 1];
+        const node2 = node;
+        nodesDistance += Distance.greatCircleVecNum(
+          node1.lat,
+          node1.lon,
+          node2.lat,
+          node2.lon
+        );
+
         connectNodesInWay(way, startCalculationNode, node, nodesDistance);
         startCalculationNode = node;
         nodesDistance = 0;
         return true;
       }
-      nodesDistance += haversine(way.nodes[index - 1], way.nodes[index]);
+      const node1 = way.nodes[index - 1];
+      const node2 = way.nodes[index];
+
+      nodesDistance += Distance.greatCircleVecNum(
+        node1.lat,
+        node1.lon,
+        node2.lat,
+        node2.lon
+      );
       // ovo je kad se treba brisati
       return false;
     });

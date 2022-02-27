@@ -50,17 +50,6 @@ isShared():boolean {
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
 }
 
-mutate_is_shared(value:boolean):boolean {
-  const offset = this.bb!.__offset(this.bb_pos, 8);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb!.writeInt8(this.bb_pos + offset, +value);
-  return true;
-}
-
 children(index: number, obj?:BTreeNode):BTreeNode|null {
   const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? (obj || new BTreeNode()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;

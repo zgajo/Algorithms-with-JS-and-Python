@@ -15,27 +15,12 @@ x():number {
   return this.bb!.readFloat64(this.bb_pos);
 }
 
-mutate_x(value:number):boolean {
-  this.bb!.writeFloat64(this.bb_pos + 0, value);
-  return true;
-}
-
 y():number {
   return this.bb!.readFloat64(this.bb_pos + 8);
 }
 
-mutate_y(value:number):boolean {
-  this.bb!.writeFloat64(this.bb_pos + 8, value);
-  return true;
-}
-
 z():number {
   return this.bb!.readFloat64(this.bb_pos + 16);
-}
-
-mutate_z(value:number):boolean {
-  this.bb!.writeFloat64(this.bb_pos + 16, value);
-  return true;
 }
 
 static sizeOf():number {

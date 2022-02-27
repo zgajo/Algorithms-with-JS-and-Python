@@ -121,10 +121,10 @@ export class AStar {
 
         const neighbor =
           newSearchNode || new SearchNode(current.node.pointsTo[i] as Node);
-        const neighborDistance = current.node.distance[i];
+        const neighbortraveltime = current.node.travelTime[i];
 
         if (!closedSet.includes(neighbor.node)) {
-          let tempG = current.gScore + neighborDistance;
+          let tempG = current.gScore + neighbortraveltime;
           // f(n) = g(n) + f(n)
           // g(n) is the cost of the path from the start node to n,
           // h(n) is a heuristic function that estimates the cost of the cheapest path from n to the goal.
@@ -170,17 +170,20 @@ export class AStar {
     // console.log(path);
 
     let distance = 0;
+    let traveltime = 0;
     path.forEach((sn) => {
       if (sn?.previous) {
         const indexOf = (sn.previous.node.pointsTo as Node[])
           .map((node) => node.id)
           .indexOf(sn.node.id);
 
+        traveltime += sn.previous.node.travelTime[indexOf];
         distance += sn.previous.node.distance[indexOf];
       }
     });
 
     console.log("distance", distance);
+    console.log("traveltime", traveltime);
 
     return {
       route: path.map((sn) => [sn?.node.lat, sn?.node.lon]) as [number[]],
