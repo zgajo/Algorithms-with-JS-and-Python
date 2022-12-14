@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "flatbuffers": "^2.0.4",
     "google-protobuf": "^3.18.0",
     "jade": "^1.11.0",
